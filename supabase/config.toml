@@ -1,0 +1,3 @@
+[functions.import-listing]
+# CORS preflights have no JWT. The function verifies the signed-in user itself.
+verify_jwt = false

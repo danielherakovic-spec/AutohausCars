@@ -1,0 +1,259 @@
+<!doctype html>
+<html lang="de">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="theme-color" content="#0b111a" />
+    <meta name="description" content="AutoValue Pro – Fahrzeug-Einkauf und Gewinnbewertung" />
+    <link rel="manifest" href="manifest.webmanifest" />
+    <title>AutoValue Pro</title>
+    <style>
+      :root { --bg:#080c12; --panel:#111824; --panel-2:#182231; --line:#263447; --text:#f2f6fb; --muted:#98a7ba; --blue:#2586f7; --blue-soft:#153a68; --green:#2fcb89; --yellow:#f5bf45; --red:#f06372; --shadow:0 16px 42px rgba(0,0,0,.24); }
+      * { box-sizing:border-box; }
+      html { background:var(--bg); }
+      body { margin:0; background:var(--bg); color:var(--text); font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; min-height:100vh; }
+      body.locked { overflow:hidden; }
+      button, input, select, textarea { font:inherit; }
+      button { cursor:pointer; }
+      .app { width:min(1360px,100%); margin:0 auto; padding:0 18px 100px; }
+      .topbar { position:sticky; z-index:9; top:0; display:flex; justify-content:space-between; align-items:center; height:72px; background:rgba(8,12,18,.9); backdrop-filter:blur(16px); border-bottom:1px solid rgba(38,52,71,.65); }
+      .brand { display:flex; align-items:center; gap:10px; color:#fff; font-weight:800; letter-spacing:-.4px; }
+      .brand-mark { display:grid; place-items:center; width:36px; height:36px; border-radius:12px; background:linear-gradient(145deg,#248cff,#1554ae); box-shadow:0 8px 22px rgba(37,134,247,.3); }
+      .actions { display:flex; gap:8px; }
+      .icon-button { display:grid; place-items:center; width:42px; height:42px; border-radius:13px; border:1px solid var(--line); background:var(--panel); color:var(--text); }
+      .icon-button:hover { background:var(--panel-2); border-color:#3b5370; }
+      .view { display:none; animation:fade .22s ease; }
+      .view.active { display:block; }
+      @keyframes fade { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:none; } }
+      h1,h2,h3,p { margin-top:0; }
+      h1 { font-size:clamp(1.55rem,4vw,2.1rem); letter-spacing:-.8px; margin-bottom:6px; }
+      h2 { font-size:1.12rem; letter-spacing:-.2px; margin-bottom:14px; }
+      h3 { font-size:1rem; margin-bottom:8px; }
+      .subtitle, .muted { color:var(--muted); }
+      .hero { display:flex; gap:22px; align-items:flex-start; justify-content:space-between; padding:28px 0 20px; }
+      .hero p { margin-bottom:0; }
+      .primary, .secondary, .danger { min-height:46px; padding:0 17px; border-radius:13px; border:0; font-weight:750; transition:.16s ease; }
+      .primary { color:#fff; background:var(--blue); box-shadow:0 9px 20px rgba(37,134,247,.22); }
+      .primary:hover { background:#459cff; transform:translateY(-1px); }
+      .secondary { color:var(--text); border:1px solid var(--line); background:var(--panel); }
+      .secondary:hover { background:var(--panel-2); }
+      .danger { color:#fff; background:#a63545; }
+      .card { background:linear-gradient(145deg,rgba(24,34,49,.96),rgba(15,22,32,.96)); border:1px solid var(--line); border-radius:18px; box-shadow:var(--shadow); }
+      .stats-grid { display:grid; grid-template-columns:repeat(5,1fr); gap:12px; }
+      .stat { padding:17px; min-height:114px; }
+      .stat span { display:block; color:var(--muted); font-size:.82rem; margin-bottom:11px; }
+      .stat strong { display:block; font-size:1.45rem; letter-spacing:-.8px; }
+      .stat .up { color:var(--green); }
+      .section { margin-top:27px; }
+      .section-heading { display:flex; align-items:center; justify-content:space-between; gap:12px; }
+      .quick-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; }
+      .quick { min-height:120px; padding:18px; text-align:left; color:var(--text); background:var(--panel); border:1px solid var(--line); border-radius:17px; }
+      .quick:hover { background:var(--panel-2); border-color:#3e5b7e; transform:translateY(-2px); }
+      .quick b { display:block; margin-top:14px; font-size:.97rem; }
+      .quick small { color:var(--muted); }
+      .quick .emoji { font-size:1.58rem; }
+      .split { display:grid; grid-template-columns:1.45fr 1fr; gap:16px; }
+      .list-card { padding:16px; }
+      .vehicle-row { display:grid; grid-template-columns:60px 1fr auto; gap:12px; align-items:center; padding:12px 0; border-bottom:1px solid rgba(38,52,71,.85); cursor:pointer; }
+      .vehicle-row:last-child { border-bottom:0; }
+      .vehicle-thumb { display:grid; place-items:center; width:60px; height:47px; border-radius:11px; background:linear-gradient(135deg,#2b4968,#182c42); font-size:1.45rem; overflow:hidden; }
+      .vehicle-thumb img { width:100%; height:100%; object-fit:cover; }
+      .vehicle-name { font-weight:760; }
+      .vehicle-meta { margin-top:3px; color:var(--muted); font-size:.82rem; }
+      .row-value { text-align:right; font-size:.86rem; }
+      .score { display:inline-grid; place-items:center; min-width:41px; height:27px; padding:0 7px; border-radius:999px; font-size:.78rem; font-weight:850; }
+      .score.good { color:#b9ffe0; background:rgba(47,203,137,.16); } .score.mid { color:#ffe5a0; background:rgba(245,191,69,.16); } .score.bad { color:#ffc0c8; background:rgba(240,99,114,.16); }
+      .task { display:flex; gap:11px; align-items:center; padding:12px 0; border-bottom:1px solid rgba(38,52,71,.85); }
+      .task:last-child { border:0; }
+      .task-check { width:20px; height:20px; accent-color:var(--blue); }
+      .task time { display:block; margin-top:3px; color:var(--muted); font-size:.8rem; }
+      .bottom-nav { position:fixed; z-index:20; bottom:0; left:0; right:0; display:flex; justify-content:center; padding:9px max(14px,env(safe-area-inset-right)) max(9px,env(safe-area-inset-bottom)) max(14px,env(safe-area-inset-left)); background:rgba(10,15,22,.93); border-top:1px solid var(--line); backdrop-filter:blur(16px); }
+      .nav-inner { display:flex; width:min(620px,100%); justify-content:space-around; }
+      .nav-button { display:flex; flex:1; flex-direction:column; align-items:center; gap:3px; min-height:48px; padding:4px; color:var(--muted); background:transparent; border:0; font-size:.7rem; }
+      .nav-button .nav-icon { font-size:1.23rem; }
+      .nav-button.active { color:#fff; }
+      .nav-button.active .nav-icon { color:var(--blue); }
+      .toolbar { display:flex; flex-wrap:wrap; gap:10px; align-items:center; margin-bottom:18px; }
+      .search { flex:1 1 260px; position:relative; }
+      .search input { width:100%; height:48px; padding:0 14px 0 42px; border:1px solid var(--line); border-radius:13px; outline:none; color:var(--text); background:var(--panel); }
+      .search input:focus, input:focus, select:focus, textarea:focus { border-color:var(--blue); box-shadow:0 0 0 3px rgba(37,134,247,.15); }
+      .search::before { content:'⌕'; position:absolute; z-index:1; left:14px; top:9px; color:var(--muted); font-size:1.4rem; }
+      select, input, textarea { width:100%; min-height:46px; padding:0 12px; color:var(--text); border:1px solid var(--line); border-radius:12px; outline:none; background:#0e1621; }
+      textarea { min-height:106px; padding-top:12px; resize:vertical; }
+      .filter { width:160px; }
+      .vehicle-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:14px; }
+      .vehicle-card { overflow:hidden; cursor:pointer; }
+      .vehicle-cover { position:relative; display:grid; place-items:center; height:134px; background:linear-gradient(135deg,#2c4766,#17283b); font-size:2.6rem; }
+      .vehicle-cover img { width:100%; height:100%; object-fit:cover; }
+      .vehicle-cover .favourite { position:absolute; top:10px; right:10px; display:grid; place-items:center; width:34px; height:34px; border:0; border-radius:10px; background:rgba(8,12,18,.72); color:#fff; }
+      .vehicle-body { padding:14px; }
+      .vehicle-title { display:flex; align-items:center; justify-content:space-between; gap:8px; }
+      .vehicle-title b { overflow:hidden; white-space:nowrap; text-overflow:ellipsis; }
+      .vehicle-price { margin:10px 0 7px; font-weight:800; font-size:1.12rem; }
+      .vehicle-detail { color:var(--muted); font-size:.81rem; }
+      .pill { display:inline-flex; align-items:center; height:28px; padding:0 9px; border:1px solid var(--line); border-radius:999px; color:var(--muted); font-size:.74rem; }
+      .empty { padding:44px 18px; text-align:center; color:var(--muted); }
+      .empty .empty-icon { display:block; margin-bottom:12px; font-size:2.4rem; }
+      .form-card { padding:20px; }
+      .form-section { padding:22px 0; border-bottom:1px solid var(--line); }
+      .form-section:first-child { padding-top:0; }
+      .form-section:last-child { border-bottom:0; }
+      .form-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:13px; }
+      label { display:block; color:#bfcada; font-size:.78rem; font-weight:680; }
+      label input, label select, label textarea { margin-top:6px; }
+      .checkboxes { display:grid; grid-template-columns:repeat(4,1fr); gap:9px; }
+      .check-label { display:flex; align-items:center; gap:8px; min-height:40px; padding:7px 9px; color:#ced8e5; font-size:.82rem; font-weight:600; background:#0d151f; border:1px solid var(--line); border-radius:10px; }
+      .check-label input { width:17px; height:17px; min-height:17px; margin:0; accent-color:var(--blue); }
+      .cost-summary { display:grid; grid-template-columns:repeat(4,1fr); gap:10px; padding:14px; background:#0b1420; border:1px solid var(--line); border-radius:14px; }
+      .cost-summary span { color:var(--muted); font-size:.75rem; } .cost-summary b { display:block; margin-top:5px; font-size:1.03rem; }
+      .profit-positive { color:var(--green); } .profit-negative { color:var(--red); }
+      .form-actions { display:flex; justify-content:flex-end; gap:10px; padding-top:20px; }
+      .details-header { display:flex; align-items:flex-start; justify-content:space-between; gap:14px; }
+      .details-title { display:flex; gap:16px; align-items:center; }
+      .detail-cover { display:grid; place-items:center; width:104px; height:78px; border-radius:16px; overflow:hidden; background:linear-gradient(135deg,#2c4766,#17283b); font-size:2.4rem; }
+      .detail-cover img { width:100%; height:100%; object-fit:cover; }
+      .detail-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin-top:20px; }
+      .detail-item { padding:14px; } .detail-item span { color:var(--muted); font-size:.74rem; } .detail-item b { display:block; margin-top:5px; }
+      .compare-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; }
+      .compare-list { display:grid; gap:8px; }
+      .compare-item { display:grid; grid-template-columns:1fr auto auto; gap:13px; align-items:center; padding:12px; border:1px solid var(--line); border-radius:12px; background:#0d151f; cursor:pointer; }
+      .compare-item:hover { border-color:#466487; }
+      .metrics { display:grid; grid-template-columns:repeat(2,1fr); gap:12px; }
+      .metric { padding:17px; } .metric span { display:block; color:var(--muted); font-size:.79rem; } .metric b { display:block; margin-top:7px; font-size:1.22rem; }
+      .bar-chart { display:flex; align-items:flex-end; gap:11px; height:174px; padding:20px 5px 0; }
+      .bar { display:flex; flex:1; align-items:flex-end; min-width:19px; height:100%; border-radius:7px 7px 0 0; background:linear-gradient(180deg,#3b9bff,#1658bf); position:relative; }
+      .bar span { position:absolute; bottom:-21px; left:50%; transform:translateX(-50%); color:var(--muted); font-size:.68rem; }
+      .notice { display:none; position:fixed; z-index:100; left:50%; bottom:87px; transform:translateX(-50%); padding:11px 16px; color:#fff; background:#1c2b3d; border:1px solid #3e5b7e; border-radius:12px; box-shadow:var(--shadow); }
+      .notice.show { display:block; animation:fade .2s ease; }
+      .mobile-fab, .mobile-form-save { display:none; }
+      .mobile-fab[hidden], .mobile-form-save[hidden] { display:none; }
+      .modal-backdrop { display:none; position:fixed; z-index:30; inset:0; padding:16px; background:rgba(0,0,0,.62); overflow:auto; }
+      .modal-backdrop.open { display:grid; place-items:center; }
+      .modal { width:min(660px,100%); max-height:calc(100vh - 32px); overflow:auto; padding:20px; background:var(--panel); border:1px solid var(--line); border-radius:20px; box-shadow:var(--shadow); }
+      .modal-head { display:flex; justify-content:space-between; gap:12px; align-items:flex-start; }
+      .two-col { display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-top:18px; }
+      .comparison-table { width:100%; margin-top:15px; border-collapse:collapse; font-size:.88rem; } .comparison-table th,.comparison-table td { padding:10px 8px; border-bottom:1px solid var(--line); text-align:left; } .comparison-table th { color:var(--muted); font-weight:650; }
+      .close-x { background:transparent; border:0; color:var(--muted); font-size:1.5rem; }
+      .auth-screen { position:fixed; z-index:200; inset:0; display:grid; place-items:center; padding:18px; overflow:auto; background:radial-gradient(circle at 20% 0%,#153a68 0,transparent 35%),#080c12; }
+      .auth-screen.hidden { display:none; }
+      .auth-card { width:min(610px,100%); padding:28px; background:linear-gradient(145deg,rgba(24,34,49,.98),rgba(11,17,26,.98)); border:1px solid #31425a; border-radius:24px; box-shadow:0 25px 80px rgba(0,0,0,.45); }
+      .auth-logo { display:grid; place-items:center; width:52px; height:52px; margin-bottom:19px; border-radius:17px; background:linear-gradient(145deg,#248cff,#1554ae); font-size:1.55rem; }
+      .auth-card h1 { margin-bottom:8px; }
+      .auth-card p { color:var(--muted); }
+      .auth-error { min-height:20px; margin-top:13px; color:#ffb6be; font-size:.86rem; }
+      .sync-status { display:flex; align-items:center; gap:7px; color:var(--muted); font-size:.78rem; }
+      .sync-dot { width:8px; height:8px; border-radius:50%; background:var(--yellow); } .sync-dot.online { background:var(--green); box-shadow:0 0 0 4px rgba(47,203,137,.12); } .sync-dot.error { background:var(--red); }
+      @media (max-width:920px) { .stats-grid { grid-template-columns:repeat(3,1fr); } .vehicle-grid { grid-template-columns:repeat(2,1fr); } .checkboxes { grid-template-columns:repeat(3,1fr); } .form-grid { grid-template-columns:repeat(2,1fr); } }
+      @media (max-width:620px) { .app { padding-left:14px; padding-right:14px; padding-bottom:128px; } .topbar { height:63px; } .topbar .brand-mark { width:33px; height:33px; } .sync-status span:last-child { display:none; } .hero { padding:21px 0 16px; } .hero .primary { min-width:46px; padding:0 13px; font-size:0; } .hero .primary::before { content:'＋'; font-size:1.45rem; } .stats-grid { grid-template-columns:repeat(2,1fr); gap:9px; } .stat { min-height:96px; padding:14px; } .stat strong { font-size:1.22rem; } .quick-grid { grid-template-columns:repeat(2,1fr); gap:9px; } .quick { min-height:104px; padding:14px; } .split { grid-template-columns:1fr; gap:12px; } .vehicle-grid { grid-template-columns:1fr; } .form-grid { grid-template-columns:1fr; gap:11px; } .checkboxes,.detail-grid,.cost-summary { grid-template-columns:1fr 1fr; gap:9px; } .form-card { padding:15px; } .form-section { padding:18px 0; } label { font-size:.82rem; } label input,label select { min-height:52px; font-size:1rem; } .toolbar { flex-wrap:nowrap; overflow-x:auto; padding:2px 1px 9px; margin-right:-14px; } .toolbar .search { min-width:260px; } .toolbar .filter { flex:0 0 150px; } .vehicle-card { display:grid; grid-template-columns:128px 1fr; min-height:140px; } .vehicle-cover { height:100%; min-height:140px; border-radius:17px 0 0 17px; } .vehicle-body { align-self:center; } .vehicle-price { margin:7px 0 5px; } .details-header { flex-direction:column; } .details-title { align-items:flex-start; } .two-col { grid-template-columns:1fr; } .modal { padding:16px; border-radius:18px; } .auth-card { padding:21px; } .compare-list { overflow:hidden; } .compare-item { grid-template-columns:1fr auto; gap:8px; } .compare-item .score { grid-column:2; } .section-heading { align-items:flex-start; } .section-heading .secondary { min-height:40px; padding:0 10px; font-size:.78rem; } .mobile-fab { display:grid; place-items:center; position:fixed; z-index:24; right:18px; bottom:80px; width:58px; height:58px; color:#fff; border:0; border-radius:20px; background:var(--blue); box-shadow:0 14px 30px rgba(37,134,247,.38); font-size:1.9rem; } .mobile-form-save { display:block; position:fixed; z-index:25; right:14px; left:14px; bottom:72px; width:calc(100% - 28px); min-height:52px; color:#fff; border:0; border-radius:16px; background:var(--blue); box-shadow:0 13px 28px rgba(37,134,247,.32); font-weight:800; } .mobile-form-save[hidden] { display:none; } }
+    </style>
+  </head>
+  <body class="locked">
+    <section id="auth-screen" class="auth-screen" aria-live="polite">
+      <div class="auth-card">
+        <div class="auth-logo">🚘</div>
+        <div id="start-panel" hidden>
+          <h1>Willkommen bei AutoValue Pro</h1>
+          <p>Erstelle einmal den gemeinsamen Bereich oder trete mit dem Einladungs-Code der ersten Person bei.</p>
+          <div class="form-actions"><button class="primary" type="button" data-auth-mode="create">Gemeinsamen Bereich erstellen</button><button class="secondary" type="button" data-auth-mode="join">Bestehendem Bereich beitreten</button><button class="secondary" type="button" data-auth-mode="login">Anmelden</button></div>
+        </div>
+        <div id="create-panel" hidden>
+          <h1>Gemeinsamen Bereich erstellen</h1>
+          <p>Du bist die erste Person. Nach der Anmeldung erhältst du einen Einladungs-Code für die zweite Person.</p>
+          <form id="create-form"><div class="two-col"><label>Dein Name<input name="name" required minlength="2" autocomplete="name" /></label><label>E-Mail-Adresse<input name="email" required type="email" autocomplete="email" /></label><label>Passwort<input name="password" required minlength="8" type="password" autocomplete="new-password" /></label></div><div id="create-error" class="auth-error"></div><div class="form-actions"><button class="secondary" type="button" data-auth-mode="start">Zurück</button><button class="primary" type="submit">Konto &amp; Bereich erstellen</button></div></form>
+        </div>
+        <div id="join-panel" hidden>
+          <h1>Gemeinsam arbeiten</h1>
+          <p>Erstelle dein persönliches Konto und gib den Einladungs-Code ein, den du erhalten hast.</p>
+          <form id="join-form"><div class="two-col"><label>Dein Name<input name="name" required minlength="2" autocomplete="name" /></label><label>E-Mail-Adresse<input name="email" required type="email" autocomplete="email" /></label><label>Passwort<input name="password" required minlength="8" type="password" autocomplete="new-password" /></label><label>Einladungs-Code<input name="joinCode" required minlength="16" autocomplete="off" /></label></div><div id="join-error" class="auth-error"></div><div class="form-actions"><button class="secondary" type="button" data-auth-mode="start">Zurück</button><button class="primary" type="submit">Konto erstellen &amp; beitreten</button></div></form>
+        </div>
+        <div id="join-existing-panel" hidden>
+          <h1>Einladungs-Code eingeben</h1>
+          <p>Dieses Konto gehört noch zu keinem gemeinsamen Fahrzeugbestand.</p>
+          <form id="join-existing-form"><div class="two-col"><label>Dein Name<input name="name" required minlength="2" autocomplete="name" /></label><label>Einladungs-Code<input name="joinCode" required minlength="16" autocomplete="off" /></label></div><div id="join-existing-error" class="auth-error"></div><div class="form-actions"><button class="primary" type="submit">Bereich beitreten</button><button class="secondary" type="button" id="logout-from-join">Anderes Konto verwenden</button></div></form>
+        </div>
+        <div id="login-panel" hidden>
+          <h1>Willkommen zurück</h1>
+          <p>Melde dich mit deiner E-Mail-Adresse an, um mit dem gemeinsamen Fahrzeugbestand zu arbeiten.</p>
+          <form id="login-form"><div class="two-col"><label>E-Mail-Adresse<input name="email" required type="email" autocomplete="email" /></label><label>Passwort<input name="password" required type="password" autocomplete="current-password" /></label></div><div id="login-error" class="auth-error"></div><div class="form-actions"><button class="secondary" type="button" data-auth-mode="start">Zurück</button><button class="primary" type="submit">Anmelden</button></div></form>
+        </div>
+      </div>
+    </section>
+    <main class="app">
+      <header class="topbar">
+        <div class="brand"><span class="brand-mark">🚘</span><span>AutoValue Pro</span></div>
+        <div class="actions"><span class="sync-status" title="Synchronisationsstatus"><i id="sync-dot" class="sync-dot"></i><span id="sync-label">Verbinde …</span></span><button class="icon-button" id="home-button" title="Startseite">⌂</button><button class="icon-button" id="settings-button" title="Einstellungen">⚙</button></div>
+      </header>
+
+      <section id="home-view" class="view active">
+        <div class="hero"><div><h1>Willkommen <span id="user-name">Daniel</span></h1><p class="subtitle">Dein Überblick für heute, <span id="today"></span>.</p></div><button class="primary" data-go="form">＋ Neues Auto</button></div>
+        <div class="stats-grid" id="stats-grid"></div>
+        <div class="section"><div class="section-heading"><h2>Schnellzugriff</h2></div><div class="quick-grid">
+          <button class="quick" data-go="form"><span class="emoji">➕</span><b>Neues Auto</b><small>Fahrzeug erfassen</small></button>
+          <button class="quick" id="quick-import"><span class="emoji">↗</span><b>Inserat übernehmen</b><small>Link einfügen</small></button>
+          <button class="quick" data-go="autos"><span class="emoji">🚗</span><b>Alle Fahrzeuge</b><small>Bestand verwalten</small></button>
+          <button class="quick" data-go="search"><span class="emoji">⌕</span><b>Vergleiche</b><small>Preispotenziale finden</small></button>
+          <button class="quick" data-go="statistics"><span class="emoji">📈</span><b>Statistiken</b><small>Gewinne auswerten</small></button>
+          <button class="quick" data-go="favorites"><span class="emoji">★</span><b>Favoriten</b><small>Fahrzeuge beobachten</small></button>
+          <button class="quick" id="export-button"><span class="emoji">⇩</span><b>Export</b><small>CSV herunterladen</small></button>
+        </div></div>
+        <div class="section split"><article class="card list-card"><div class="section-heading"><h2>Zuletzt bearbeitet</h2><button class="secondary" data-go="autos">Alle anzeigen</button></div><div id="recent-list"></div></article><article class="card list-card"><div class="section-heading"><h2>Offene Aufgaben</h2><button class="secondary" id="add-task">＋</button></div><div id="task-list"></div></article></div>
+      </section>
+
+      <section id="autos-view" class="view">
+        <div class="hero"><div><h1>Fahrzeuge</h1><p class="subtitle">Deine eigene Fahrzeugdatenbank.</p></div><button class="primary" data-go="form">＋ Neues Auto</button></div>
+        <div class="toolbar"><div class="search"><input id="vehicle-search" placeholder="Marke, Modell oder Motor suchen …" /></div><select class="filter" id="status-filter"><option value="">Alle Status</option><option>Entwurf</option><option>Besichtigung geplant</option><option>Reserviert</option><option>Gekauft</option><option>In Aufbereitung</option><option>Inseriert</option><option>Verkauft</option><option>Archiviert</option></select><select class="filter" id="sort-filter"><option value="newest">Neueste zuerst</option><option value="score">Bester Score</option><option value="profit">Höchster Gewinn</option><option value="price">Niedrigster Preis</option></select></div>
+        <div id="vehicle-grid" class="vehicle-grid"></div>
+      </section>
+
+      <section id="search-view" class="view">
+        <div class="hero"><div><h1>Vergleiche & Suche</h1><p class="subtitle">Finde gute Einkaufsmöglichkeiten in deinem Bestand.</p></div></div>
+        <div class="card form-card"><div class="form-grid"><label>Marke<input id="compare-brand" placeholder="z. B. Ford" /></label><label>Modell<input id="compare-model" placeholder="z. B. Fiesta" /></label><label>Baujahr ab<input id="compare-year" type="number" placeholder="2014" /></label><label>Kilometer bis<input id="compare-km" type="number" placeholder="150000" /></label><label>Preis bis<input id="compare-price" type="number" placeholder="10000" /></label><label>Getriebe<select id="compare-gear"><option value="">Alle</option><option>Automatik</option><option>Handschaltung</option><option>DSG</option><option>CVT</option></select></label></div><div class="form-actions"><button class="primary" id="run-compare">Vergleich starten</button></div></div>
+        <div class="section"><div id="comparison-summary"></div><div id="comparison-results" class="compare-list"></div></div>
+      </section>
+
+      <section id="statistics-view" class="view">
+        <div class="hero"><div><h1>Statistiken</h1><p class="subtitle">So entwickelt sich dein Fahrzeuggeschäft.</p></div></div>
+        <div id="metrics" class="metrics"></div>
+        <div class="section card list-card"><h2>Gewinnentwicklung nach Fahrzeug</h2><div id="profit-chart" class="bar-chart"></div></div>
+        <div class="section split"><article class="card list-card"><h2>Top-Modelle</h2><div id="top-models"></div></article><article class="card list-card"><h2>Statusverteilung</h2><div id="status-distribution"></div></article></div>
+      </section>
+
+      <section id="favorites-view" class="view"><div class="hero"><div><h1>Favoriten</h1><p class="subtitle">Fahrzeuge, die du im Blick behalten möchtest.</p></div></div><div id="favorite-grid" class="vehicle-grid"></div></section>
+
+      <section id="form-view" class="view">
+        <div class="hero"><div><h1 id="form-heading">Neues Auto hinzufügen</h1><p class="subtitle">Erfasse alles Wichtige – die Bewertung wird direkt berechnet.</p></div><button class="secondary" data-go="autos">Abbrechen</button></div>
+        <form id="vehicle-form" class="card form-card">
+          <input id="vehicle-id" type="hidden" />
+          <div class="form-section"><div class="section-heading"><h2>Fahrzeugdaten</h2><button class="secondary" type="button" id="import-listing">↗ Inserat-Link importieren</button></div><p class="muted">Öffentliche Inserat-Links können Preis, Kilometerstand und weitere Angaben automatisch vorfüllen. Bitte alle Werte prüfen.</p><div class="form-grid">
+            <label>Marke *<input name="brand" required placeholder="z. B. Ford" /></label><label>Modell *<input name="model" required placeholder="z. B. Fiesta" /></label><label>Baureihe<input name="series" placeholder="z. B. MK7" /></label>
+            <label>Generation<input name="generation" /></label><label>Karosserie<input name="body" placeholder="Kleinwagen" /></label><label>Farbe<input name="color" /></label>
+            <label>Erstzulassung<input name="registration" type="month" /></label><label>Baujahr *<input name="year" required type="number" min="1900" max="2100" placeholder="2014" /></label><label>Kilometer *<input name="mileage" required type="number" min="0" placeholder="120000" /></label>
+            <label>Leistung (PS)<input name="ps" type="number" min="0" /></label><label>Leistung (kW)<input name="kw" type="number" min="0" /></label><label>Motorcode<input name="engineCode" /></label>
+            <label>Hubraum (cm³)<input name="displacement" type="number" min="0" /></label><label>Getriebe<select name="gearbox"><option value="">Bitte wählen</option><option>Automatik</option><option>Handschaltung</option><option>DSG</option><option>CVT</option><option>Sonstiges</option></select></label><label>Kraftstoff<input name="fuel" placeholder="Benzin, Diesel, Elektro …" /></label>
+            <label>Antrieb<input name="drive" placeholder="Front, Heck, Allrad" /></label><label>Euro-Norm<input name="euroNorm" /></label><label>HU/TÜV bis<input name="inspection" type="month" /></label>
+            <label>Anzahl Halter<input name="owners" type="number" min="0" /></label><label>CO₂ (g/km)<input name="co2" type="number" min="0" /></label><label>Verbrauch (l/100km)<input name="consumption" type="number" min="0" step="0.1" /></label>
+          </div></div>
+          <div class="form-section"><h2>Ausstattung & Zustand</h2><div id="equipment-checkboxes" class="checkboxes"></div><div class="checkboxes" style="margin-top:9px"><label class="check-label"><input type="checkbox" name="accidentFree" /> Unfallfrei</label><label class="check-label"><input type="checkbox" name="serviceBook" /> Scheckheft</label><label class="check-label"><input type="checkbox" name="garage" /> Garagenfahrzeug</label><label class="check-label"><input type="checkbox" name="nonSmoker" /> Nichtraucher</label><label class="check-label"><input type="checkbox" name="imported" /> Import</label><label class="check-label"><input type="checkbox" name="towbar" /> Anhängerkupplung</label></div></div>
+          <div class="form-section"><h2>Foto</h2><p class="muted">Das Titelbild wird im gemeinsamen Supabase-Speicher abgelegt.</p><label>Titelbild auswählen<input id="photo-input" type="file" accept="image/*" /></label><input id="photo-data" name="photo" type="hidden" /><div id="photo-preview" class="detail-cover" style="margin-top:12px">🚘</div></div>
+          <div class="form-section"><h2>Preisdaten & Gewinnrechner</h2><div class="form-grid"><label>Angebotspreis (€)<input name="askingPrice" class="money-input" type="number" min="0" step="0.01" /></label><label>Gekauft für (€)<input name="purchasePrice" class="money-input" type="number" min="0" step="0.01" /></label><label>Verhandlung/Zielpreis (€)<input name="targetPrice" class="money-input" type="number" min="0" step="0.01" /></label><label>Transportkosten (€)<input name="transportCost" class="money-input" type="number" min="0" step="0.01" /></label><label>Anmeldung (€)<input name="registrationCost" class="money-input" type="number" min="0" step="0.01" /></label><label>Reparaturkosten (€)<input name="repairCost" class="money-input" type="number" min="0" step="0.01" /></label><label>Reinigung (€)<input name="cleaningCost" class="money-input" type="number" min="0" step="0.01" /></label><label>Inseratskosten (€)<input name="listingCost" class="money-input" type="number" min="0" step="0.01" /></label><label>Weitere Kosten (€)<input name="otherCost" class="money-input" type="number" min="0" step="0.01" /></label><label>Gewünschter Verkauf (€)<input name="desiredSalePrice" class="money-input" type="number" min="0" step="0.01" /></label><label>Verkauft für (€)<input name="soldPrice" class="money-input" type="number" min="0" step="0.01" /></label><label>Steuern (€)<input name="taxes" class="money-input" type="number" min="0" step="0.01" /></label></div><div id="cost-summary" class="cost-summary" style="margin-top:15px"></div></div>
+          <div class="form-section"><h2>Bewertung, Status & Notizen</h2><div class="form-grid"><label>Status<select name="status"><option>Entwurf</option><option>Besichtigung geplant</option><option>Reserviert</option><option>Gekauft</option><option>In Aufbereitung</option><option>Inseriert</option><option>Verkauft</option><option>Archiviert</option></select></label><label>Eigene Sterne<select name="rating"><option value="">Nicht bewertet</option><option value="1">★</option><option value="2">★★</option><option value="3">★★★</option><option value="4">★★★★</option><option value="5">★★★★★</option></select></label><label>Ort<input name="location" placeholder="z. B. Bremen" /></label></div><label style="margin-top:13px">Notizen<textarea name="notes" placeholder="z. B. Muss Stoßdämpfer vorne wechseln."></textarea></label></div>
+          <div class="form-actions"><button type="button" class="secondary" data-go="autos">Abbrechen</button><button type="submit" class="primary">Fahrzeug speichern</button></div>
+        </form>
+      </section>
+
+      <section id="detail-view" class="view"><div id="detail-content"></div></section>
+      <section id="profile-view" class="view"><div class="hero"><div><h1>Profil & Einstellungen</h1><p class="subtitle">Gemeinsamer Datenbestand und persönliches Konto.</p></div></div><div class="card form-card"><div class="form-section"><h2>Aktives Konto</h2><label>Name<input id="name-setting" value="" readonly /></label><p class="muted" style="margin-top:12px">Alle Änderungen werden sicher im gemeinsamen Datenspeicher gespeichert und auf den anderen angemeldeten Geräten aktualisiert.</p></div><div class="form-section"><h2>Datenverwaltung</h2><p class="muted">Exportiere deinen aktuellen Fahrzeugbestand. Das vollständige Zurücksetzen ist nur direkt über die Datenablage möglich, damit niemand versehentlich den gemeinsamen Bestand löscht.</p><div class="form-actions"><button class="secondary" id="profile-export">CSV exportieren</button></div><label style="margin-top:16px">Bestehende AutoValue-Sicherung übernehmen<input id="backup-import" type="file" accept="application/json,.json" /></label><p class="muted" style="margin-top:8px">Liest den bisherigen Inhalt von <code>data/autovalue-pro.json</code> ein und führt Fahrzeuge sowie Aufgaben anhand ihrer Änderungszeit zusammen.</p></div></div></section>
+    </main>
+    <nav class="bottom-nav"><div class="nav-inner"><button class="nav-button active" data-go="home"><span class="nav-icon">⌂</span>Home</button><button class="nav-button" data-go="autos"><span class="nav-icon">🚗</span>Autos</button><button class="nav-button" data-go="search"><span class="nav-icon">⌕</span>Suche</button><button class="nav-button" data-go="statistics"><span class="nav-icon">▥</span>Statistik</button><button class="nav-button" data-go="profile"><span class="nav-icon">◉</span>Profil</button></div></nav>
+    <button id="mobile-new" class="mobile-fab" aria-label="Neues Fahrzeug">＋</button>
+    <button id="mobile-form-save" class="mobile-form-save" hidden>Fahrzeug speichern</button>
+    <div id="notice" class="notice"></div>
+    <div id="task-modal" class="modal-backdrop"><div class="modal"><div class="modal-head"><div><h2>Neue Aufgabe</h2><p class="muted">Sie erscheint auf deinem Dashboard.</p></div><button class="close-x" data-close-modal>×</button></div><form id="task-form"><div class="two-col"><label>Aufgabe<input name="title" required placeholder="z. B. Fiesta besichtigen" /></label><label>Termin<input name="date" required type="date" /></label></div><div class="form-actions"><button type="button" class="secondary" data-close-modal>Abbrechen</button><button class="primary" type="submit">Hinzufügen</button></div></form></div></div>
+    <div id="invite-modal" class="modal-backdrop"><div class="modal"><div class="modal-head"><div><h2>Einladungs-Code</h2><p class="muted">Gib diesen Code nur an die zweite Person weiter. Danach können keine weiteren Konten beitreten.</p></div><button class="close-x" data-close-modal>×</button></div><label>Code für den gemeinsamen Bereich<input id="invite-code" readonly autocomplete="off" /></label><div class="form-actions"><button type="button" class="secondary" data-close-modal>Später</button><button type="button" class="primary" id="copy-invite-code">Code kopieren</button></div></div></div>
+    <div id="compare-modal" class="modal-backdrop"><div class="modal"><div class="modal-head"><div><h2>Fahrzeuge vergleichen</h2><p class="muted">Die Unterschiede sind aus Sicht des ausgewählten Fahrzeugs eingefärbt.</p></div><button class="close-x" data-close-modal>×</button></div><div id="compare-modal-content"></div></div></div>
+    <div id="import-modal" class="modal-backdrop"><div class="modal"><div class="modal-head"><div><h2>Inserat automatisch übernehmen</h2><p class="muted">Die App liest öffentlich verfügbare Angaben aus dem Link und trägt sie als Vorschlag ein. Überprüfe anschließend alle Werte.</p></div><button class="close-x" data-close-modal>×</button></div><form id="import-form"><label>Link zum Inserat<input name="url" required type="url" placeholder="https://…" inputmode="url" autocomplete="url" /></label><div id="import-error" class="auth-error"></div><div class="form-actions"><button type="button" class="secondary" data-close-modal>Abbrechen</button><button class="primary" type="submit">Inserat auslesen</button></div></form></div></div>
+    <script src="config.js"></script>
+    <script type="module" src="app.js"></script>
+  </body>
+</html>
+
