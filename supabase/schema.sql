@@ -1,5 +1,6 @@
--- AutoValue Pro: einmal vollständig im Supabase SQL Editor ausführen.
--- Der Publishable/Anon-Key darf im Browser stehen; Sicherheit wird durch Auth + RLS hergestellt.
+-- AutoValue Pro: complete schema for a NEW project with one shared password.
+-- For an EXISTING e-mail/invite installation, run shared-password-migration.sql instead.
+-- The actual shared password is never written to this file or the web app.
 
 create extension if not exists pgcrypto with schema extensions;
 create schema if not exists private;
@@ -28,10 +29,12 @@ create table if not exists public.av_workspace_members (
   unique (user_id)
 );
 
-create table if not exists private.av_workspace_invites (
-  code_hash text primary key,
-  workspace_id uuid not null unique references public.av_workspaces(id) on delete cascade,
-  created_at timestamptz not null default now()
+create table if not exists private.av_shared_access_config (
+  singleton boolean primary key default true check (singleton),
+  password_hash text,
+  workspace_id uuid references public.av_workspaces(id) on delete set null,
+  configured_at timestamptz,
+  check (password_hash is null or char_length(password_hash) >= 20)
 );
 
 alter table public.av_workspaces enable row level security;
@@ -53,12 +56,16 @@ using (
   )
 );
 
--- Direct table changes are deliberately not exposed. The RPC below validates membership
--- and merges concurrent vehicle/task edits server-side.
+-- Browser sessions may read only their own membership and workspace. All mutations
+-- go through the restricted RPCs below, which merge concurrent entity changes.
 revoke all on table public.av_workspaces from anon, authenticated;
 revoke all on table public.av_workspace_members from anon, authenticated;
 grant select on table public.av_workspaces, public.av_workspace_members to authenticated;
-revoke all on table private.av_workspace_invites from public, anon, authenticated;
+revoke all on table private.av_shared_access_config from public, anon, authenticated, service_role;
+
+insert into private.av_shared_access_config (singleton)
+values (true)
+on conflict (singleton) do nothing;
 
 create or replace function private.av_merge_entities(p_current jsonb, p_incoming jsonb)
 returns jsonb
@@ -93,92 +100,6 @@ as $$
   from chosen;
 $$;
 
-create or replace function public.av_create_workspace(p_join_code text, p_display_name text)
-returns table (workspace_id uuid, state jsonb, display_name text)
-language plpgsql
-security definer
-set search_path = ''
-as $$
-declare
-  v_workspace_id uuid;
-  v_state jsonb := jsonb_build_object(
-    'version', 1,
-    'vehicles', '[]'::jsonb,
-    'tasks', '[]'::jsonb,
-    'updatedAt', to_jsonb(now()),
-    'lastModifiedBy', null
-  );
-  v_display_name text := btrim(coalesce(p_display_name, ''));
-  v_code_hash text;
-begin
-  if auth.uid() is null then
-    raise exception 'Bitte zuerst anmelden.' using errcode = '42501';
-  end if;
-  if char_length(v_display_name) < 2 or char_length(v_display_name) > 80 then
-    raise exception 'Bitte einen Namen zwischen 2 und 80 Zeichen eingeben.';
-  end if;
-  if char_length(btrim(coalesce(p_join_code, ''))) < 16 then
-    raise exception 'Der Einladungs-Code ist ungültig.';
-  end if;
-  if exists (select 1 from public.av_workspace_members where user_id = auth.uid()) then
-    raise exception 'Dieses Konto gehört bereits zu einem gemeinsamen Bereich.';
-  end if;
-
-  v_code_hash := encode(extensions.digest(btrim(p_join_code), 'sha256'), 'hex');
-  insert into public.av_workspaces (state) values (v_state) returning id into v_workspace_id;
-  insert into public.av_workspace_members (workspace_id, user_id, display_name)
-  values (v_workspace_id, auth.uid(), v_display_name);
-  insert into private.av_workspace_invites (code_hash, workspace_id)
-  values (v_code_hash, v_workspace_id);
-
-  return query select v_workspace_id, v_state, v_display_name;
-end;
-$$;
-
-create or replace function public.av_join_workspace(p_join_code text, p_display_name text)
-returns table (workspace_id uuid, state jsonb, display_name text)
-language plpgsql
-security definer
-set search_path = ''
-as $$
-declare
-  v_workspace_id uuid;
-  v_state jsonb;
-  v_display_name text := btrim(coalesce(p_display_name, ''));
-  v_existing_workspace_id uuid;
-begin
-  if auth.uid() is null then
-    raise exception 'Bitte zuerst anmelden.' using errcode = '42501';
-  end if;
-  if char_length(v_display_name) < 2 or char_length(v_display_name) > 80 then
-    raise exception 'Bitte einen Namen zwischen 2 und 80 Zeichen eingeben.';
-  end if;
-  select workspace_id into v_workspace_id
-  from private.av_workspace_invites
-  where code_hash = encode(extensions.digest(btrim(coalesce(p_join_code, '')), 'sha256'), 'hex');
-  if v_workspace_id is null then
-    raise exception 'Der Einladungs-Code ist nicht gültig.' using errcode = '22023';
-  end if;
-
-  select workspace_id into v_existing_workspace_id
-  from public.av_workspace_members
-  where user_id = auth.uid();
-  if v_existing_workspace_id is not null and v_existing_workspace_id <> v_workspace_id then
-    raise exception 'Dieses Konto gehört bereits zu einem anderen gemeinsamen Bereich.';
-  end if;
-  if v_existing_workspace_id is null then
-    if (select count(*) from public.av_workspace_members where workspace_id = v_workspace_id) >= 2 then
-      raise exception 'Dieser gemeinsame Bereich hat bereits zwei Personen.' using errcode = '22023';
-    end if;
-    insert into public.av_workspace_members (workspace_id, user_id, display_name)
-    values (v_workspace_id, auth.uid(), v_display_name);
-  end if;
-
-  select w.state into v_state from public.av_workspaces w where w.id = v_workspace_id;
-  return query select v_workspace_id, v_state, v_display_name;
-end;
-$$;
-
 create or replace function public.av_save_workspace_state(p_state jsonb)
 returns jsonb
 language plpgsql
@@ -207,7 +128,7 @@ begin
   where m.user_id = auth.uid()
   for update of w;
   if v_workspace_id is null then
-    raise exception 'Kein gemeinsamer Bereich für dieses Konto gefunden.' using errcode = '42501';
+    raise exception 'Kein gemeinsamer Bereich für diese Sitzung gefunden.' using errcode = '42501';
   end if;
 
   v_next_state := jsonb_build_object(
@@ -224,12 +145,60 @@ begin
 end;
 $$;
 
-revoke all on function public.av_create_workspace(text, text) from public, anon;
-revoke all on function public.av_join_workspace(text, text) from public, anon;
+-- This function has no browser grant. The Edge Function validates the anonymous
+-- caller and uses its server-only service-role key to run it.
+create or replace function public.av_grant_shared_access(p_user_id uuid, p_password text)
+returns table (workspace_id uuid, state jsonb, display_name text)
+language plpgsql
+security definer
+set search_path = ''
+as $$
+declare
+  v_password_hash text;
+  v_workspace_id uuid;
+  v_state jsonb;
+  v_display_name text := 'Gemeinsamer Zugriff';
+begin
+  if p_user_id is null or coalesce(btrim(p_password), '') = '' then
+    raise exception 'Zugang nicht möglich.' using errcode = '42501';
+  end if;
+  select password_hash into v_password_hash
+  from private.av_shared_access_config where singleton = true;
+  if v_password_hash is null then
+    raise exception 'Das gemeinsame Zugangs-Passwort wurde noch nicht eingerichtet.' using errcode = '55000';
+  end if;
+  if extensions.crypt(p_password, v_password_hash) is distinct from v_password_hash then
+    raise exception 'Zugang nicht möglich.' using errcode = '42501';
+  end if;
+
+  select w.id, w.state into v_workspace_id, v_state
+  from public.av_workspaces w
+  join private.av_shared_access_config config on config.workspace_id = w.id
+  where config.singleton = true
+  for update of w;
+  if v_workspace_id is null then
+    insert into public.av_workspaces (state)
+    values (jsonb_build_object(
+      'version', 1, 'vehicles', '[]'::jsonb, 'tasks', '[]'::jsonb,
+      'updatedAt', to_jsonb(now()), 'lastModifiedBy', null
+    )) returning id, state into v_workspace_id, v_state;
+    update private.av_shared_access_config
+    set workspace_id = v_workspace_id
+    where singleton = true;
+  end if;
+
+  insert into public.av_workspace_members (workspace_id, user_id, display_name)
+  values (v_workspace_id, p_user_id, v_display_name)
+  on conflict (user_id) do update
+  set workspace_id = excluded.workspace_id, display_name = excluded.display_name;
+  return query select v_workspace_id, v_state, v_display_name;
+end;
+$$;
+
 revoke all on function public.av_save_workspace_state(jsonb) from public, anon;
-grant execute on function public.av_create_workspace(text, text) to authenticated;
-grant execute on function public.av_join_workspace(text, text) to authenticated;
+revoke all on function public.av_grant_shared_access(uuid, text) from public, anon, authenticated;
 grant execute on function public.av_save_workspace_state(jsonb) to authenticated;
+grant execute on function public.av_grant_shared_access(uuid, text) to service_role;
 
 insert into storage.buckets (id, name, public)
 values ('vehicle-photos', 'vehicle-photos', false)
@@ -259,3 +228,9 @@ begin
   end if;
 end;
 $$;
+
+-- In a separate, unsaved SQL Editor query, set the password like this:
+-- update private.av_shared_access_config
+-- set password_hash = extensions.crypt('PASTE_A_NEW_LONG_SHARED_PASSWORD_HERE', extensions.gen_salt('bf', 12)),
+--     configured_at = now()
+-- where singleton = true;

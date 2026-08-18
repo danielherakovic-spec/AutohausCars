@@ -1,3 +1,8 @@
 [functions.import-listing]
 # CORS preflights have no JWT. The function verifies the signed-in user itself.
 verify_jwt = false
+
+[functions.enter-shared-workspace]
+# Keep Supabase's platform-level JWT check enabled. The handler also verifies that
+# the caller is an anonymous session before it uses the server-only privileged key.
+verify_jwt = true
