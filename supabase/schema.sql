@@ -145,21 +145,26 @@ begin
 end;
 $$;
 
--- This function has no browser grant. The Edge Function validates the anonymous
--- caller and uses its server-only service-role key to run it.
-create or replace function public.av_grant_shared_access(p_user_id uuid, p_password text)
+-- The browser calls this only after it has an authenticated anonymous session.
+-- The function uses auth.uid() itself; it never trusts a browser-supplied user id.
+create or replace function public.av_enter_shared_workspace(p_password text)
 returns table (workspace_id uuid, state jsonb, display_name text)
 language plpgsql
 security definer
 set search_path = ''
 as $$
 declare
+  v_user_id uuid := auth.uid();
+  v_is_anonymous boolean := coalesce((auth.jwt() ->> 'is_anonymous')::boolean, false);
   v_password_hash text;
   v_workspace_id uuid;
   v_state jsonb;
   v_display_name text := 'Gemeinsamer Zugriff';
 begin
-  if p_user_id is null or coalesce(btrim(p_password), '') = '' then
+  if v_user_id is null or coalesce(btrim(p_password), '') = '' then
+    raise exception 'Zugang nicht möglich.' using errcode = '42501';
+  end if;
+  if not coalesce(v_is_anonymous, false) then
     raise exception 'Zugang nicht möglich.' using errcode = '42501';
   end if;
   select password_hash into v_password_hash
@@ -188,7 +193,7 @@ begin
   end if;
 
   insert into public.av_workspace_members (workspace_id, user_id, display_name)
-  values (v_workspace_id, p_user_id, v_display_name)
+  values (v_workspace_id, v_user_id, v_display_name)
   on conflict (user_id) do update
   set workspace_id = excluded.workspace_id, display_name = excluded.display_name;
   return query select v_workspace_id, v_state, v_display_name;
@@ -196,9 +201,9 @@ end;
 $$;
 
 revoke all on function public.av_save_workspace_state(jsonb) from public, anon;
-revoke all on function public.av_grant_shared_access(uuid, text) from public, anon, authenticated;
+revoke all on function public.av_enter_shared_workspace(text) from public, anon;
 grant execute on function public.av_save_workspace_state(jsonb) to authenticated;
-grant execute on function public.av_grant_shared_access(uuid, text) to service_role;
+grant execute on function public.av_enter_shared_workspace(text) to authenticated;
 
 insert into storage.buckets (id, name, public)
 values ('vehicle-photos', 'vehicle-photos', false)

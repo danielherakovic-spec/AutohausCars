@@ -170,7 +170,6 @@
         <div class="stats-grid" id="stats-grid"></div>
         <div class="section"><div class="section-heading"><h2>Schnellzugriff</h2></div><div class="quick-grid">
           <button class="quick" data-go="form"><span class="emoji">➕</span><b>Neues Auto</b><small>Fahrzeug erfassen</small></button>
-          <button class="quick" id="quick-import"><span class="emoji">↗</span><b>Inserat übernehmen</b><small>Link einfügen</small></button>
           <button class="quick" data-go="autos"><span class="emoji">🚗</span><b>Alle Fahrzeuge</b><small>Bestand verwalten</small></button>
           <button class="quick" data-go="search"><span class="emoji">⌕</span><b>Vergleiche</b><small>Preispotenziale finden</small></button>
           <button class="quick" data-go="statistics"><span class="emoji">📈</span><b>Statistiken</b><small>Gewinne auswerten</small></button>
@@ -205,7 +204,7 @@
         <div class="hero"><div><h1 id="form-heading">Neues Auto hinzufügen</h1><p class="subtitle">Erfasse alles Wichtige – die Bewertung wird direkt berechnet.</p></div><button class="secondary" data-go="autos">Abbrechen</button></div>
         <form id="vehicle-form" class="card form-card">
           <input id="vehicle-id" type="hidden" />
-          <div class="form-section"><div class="section-heading"><h2>Fahrzeugdaten</h2><button class="secondary" type="button" id="import-listing">↗ Inserat-Link importieren</button></div><p class="muted">Öffentliche Inserat-Links können Preis, Kilometerstand und weitere Angaben automatisch vorfüllen. Bitte alle Werte prüfen.</p><div class="form-grid">
+          <div class="form-section"><div class="section-heading"><h2>Fahrzeugdaten</h2></div><div class="form-grid">
             <label>Marke *<input name="brand" required placeholder="z. B. Ford" /></label><label>Modell *<input name="model" required placeholder="z. B. Fiesta" /></label><label>Baureihe<input name="series" placeholder="z. B. MK7" /></label>
             <label>Generation<input name="generation" /></label><label>Karosserie<input name="body" placeholder="Kleinwagen" /></label><label>Farbe<input name="color" /></label>
             <label>Erstzulassung<input name="registration" type="month" /></label><label>Baujahr *<input name="year" required type="number" min="1900" max="2100" placeholder="2014" /></label><label>Kilometer *<input name="mileage" required type="number" min="0" placeholder="120000" /></label>
@@ -231,7 +230,6 @@
     <div id="notice" class="notice"></div>
     <div id="task-modal" class="modal-backdrop"><div class="modal"><div class="modal-head"><div><h2>Neue Aufgabe</h2><p class="muted">Sie erscheint auf deinem Dashboard.</p></div><button class="close-x" data-close-modal>×</button></div><form id="task-form"><div class="two-col"><label>Aufgabe<input name="title" required placeholder="z. B. Fiesta besichtigen" /></label><label>Termin<input name="date" required type="date" /></label></div><div class="form-actions"><button type="button" class="secondary" data-close-modal>Abbrechen</button><button class="primary" type="submit">Hinzufügen</button></div></form></div></div>
     <div id="compare-modal" class="modal-backdrop"><div class="modal"><div class="modal-head"><div><h2>Fahrzeuge vergleichen</h2><p class="muted">Die Unterschiede sind aus Sicht des ausgewählten Fahrzeugs eingefärbt.</p></div><button class="close-x" data-close-modal>×</button></div><div id="compare-modal-content"></div></div></div>
-    <div id="import-modal" class="modal-backdrop"><div class="modal"><div class="modal-head"><div><h2>Inserat automatisch übernehmen</h2><p class="muted">Die App liest öffentlich verfügbare Angaben aus dem Link und trägt sie als Vorschlag ein. Überprüfe anschließend alle Werte.</p></div><button class="close-x" data-close-modal>×</button></div><form id="import-form"><label>Link zum Inserat<input name="url" required type="url" placeholder="https://…" inputmode="url" autocomplete="url" /></label><div id="import-error" class="auth-error"></div><div class="form-actions"><button type="button" class="secondary" data-close-modal>Abbrechen</button><button class="primary" type="submit">Inserat auslesen</button></div></form></div></div>
     <script src="config.js"></script>
     <script type="module" src="app.js"></script>
   </body>
