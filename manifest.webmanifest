@@ -1,6 +1,6 @@
 {
-  "name": "AutoValue Pro",
-  "short_name": "AutoValue",
+  "name": "CarsAutoHaus",
+  "short_name": "CarsAutoHaus",
   "description": "Fahrzeug-Einkauf, Vergleich und Gewinnbewertung",
   "start_url": "./",
   "display": "standalone",

@@ -4,9 +4,9 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <meta name="theme-color" content="#0b111a" />
-    <meta name="description" content="AutoValue Pro – Fahrzeug-Einkauf und Gewinnbewertung" />
+    <meta name="description" content="CarsAutoHaus – Fahrzeug-Einkauf, Preisvergleich und Gewinnbewertung" />
     <link rel="manifest" href="manifest.webmanifest" />
-    <title>AutoValue Pro</title>
+    <title>CarsAutoHaus</title>
     <style>
       :root { --bg:#080c12; --panel:#111824; --panel-2:#182231; --line:#263447; --text:#f2f6fb; --muted:#98a7ba; --blue:#2586f7; --blue-soft:#153a68; --green:#2fcb89; --yellow:#f5bf45; --red:#f06372; --shadow:0 16px 42px rgba(0,0,0,.24); }
       * { box-sizing:border-box; }
@@ -130,6 +130,12 @@
       .voice-fallback { display:none; padding:10px 11px; border:1px solid rgba(240,99,114,.42); border-radius:10px; color:#ffd0d6; background:rgba(104,34,46,.28); }
       .voice-fallback.show { display:block; }
       .voice-field-active { border-color:#5ab6ff !important; box-shadow:0 0 0 3px rgba(72,185,255,.13) !important; }
+      .comparison-focus { margin-top:22px; }
+      .comparison-focus .section-heading { margin-bottom:13px; padding:0 2px; }
+      .comparison-focus .section-heading h2 { margin-bottom:3px; }
+      #comparison-summary .metrics { margin-bottom:13px; }
+      #comparison-results .compare-item { border-left:3px solid rgba(72,185,255,.7); background:linear-gradient(90deg,rgba(37,134,247,.08),rgba(19,31,45,.72)); }
+      #comparison-results .compare-item:hover { border-left-color:#73c5ff; transform:translateY(-1px); }
       .profit-positive { color:var(--green); } .profit-negative { color:var(--red); }
       .form-actions { display:flex; justify-content:flex-end; gap:10px; padding-top:20px; }
       .details-header { display:flex; align-items:flex-start; justify-content:space-between; gap:14px; }
@@ -176,7 +182,7 @@
       <div class="auth-card">
         <div class="auth-logo">🚘</div>
         <div id="access-panel">
-          <h1>Willkommen bei AutoValue Pro</h1>
+          <h1>Willkommen bei CarsAutoHaus</h1>
           <p>Öffne den gemeinsamen Fahrzeugbestand mit dem Zugangs-Passwort. Alle berechtigten Geräte arbeiten live im selben Bestand.</p>
           <form id="access-form"><label>Gemeinsames Zugangs-Passwort<input name="password" required type="password" autocomplete="current-password" autofocus /></label><div id="access-error" class="auth-error"></div><div class="form-actions"><button class="primary" type="submit">Gemeinsamen Bestand öffnen</button></div></form>
           <p class="muted" style="margin-top:14px;font-size:.8rem">Das Passwort wird nur verschlüsselt an Supabase zur Prüfung gesendet und nicht in dieser Website gespeichert.</p>
@@ -185,7 +191,7 @@
     </section>
     <main class="app">
       <header class="topbar">
-        <div class="brand"><span class="brand-mark">🚘</span><span>AutoValue Pro</span></div>
+        <div class="brand"><span class="brand-mark">🚘</span><span>CarsAutoHaus</span></div>
         <div class="actions"><span class="sync-status" title="Synchronisationsstatus"><i id="sync-dot" class="sync-dot"></i><span id="sync-label">Verbinde …</span></span><button class="icon-button" id="home-button" title="Startseite">⌂</button><button class="icon-button" id="settings-button" title="Einstellungen">⚙</button></div>
       </header>
 
@@ -212,7 +218,7 @@
       <section id="search-view" class="view">
         <div class="hero"><div><h1>Vergleiche & Suche</h1><p class="subtitle">Finde gute Einkaufsmöglichkeiten in deinem Bestand.</p></div></div>
         <div class="card form-card"><div class="form-grid"><label>Marke<input id="compare-brand" placeholder="z. B. Ford" /></label><label>Modell<input id="compare-model" placeholder="z. B. Fiesta" /></label><label>Baujahr ab<input id="compare-year" type="number" placeholder="2014" /></label><label>Kilometer bis<input id="compare-km" type="number" placeholder="150000" /></label><label>Preis bis<input id="compare-price" type="number" placeholder="10000" /></label><label>Getriebe<select id="compare-gear"><option value="">Alle</option><option>Automatik</option><option>Handschaltung</option><option>DSG</option><option>CVT</option></select></label></div><div class="form-actions"><button class="primary" id="run-compare">Vergleich starten</button></div></div>
-        <div class="section"><div id="comparison-summary"></div><div id="comparison-results" class="compare-list"></div></div>
+        <div class="section comparison-focus"><div class="section-heading"><div><h2>Dein Preisvergleich</h2><p class="muted">Filtere deinen Bestand und erkenne Preisniveau, Spanne und passende Fahrzeuge auf einen Blick.</p></div></div><div id="comparison-summary"></div><div id="comparison-results" class="compare-list"></div></div>
       </section>
 
       <section id="statistics-view" class="view">
@@ -232,21 +238,21 @@
             <div class="voice-assistant-head">
               <div class="voice-icon" aria-hidden="true">◉</div>
               <div>
-                <h2 id="voice-assistant-title">Fahrzeug per Sprache erfassen</h2>
-                <p class="muted">Ich stelle kurze Fragen und übernehme deine Antworten direkt in dieses Formular.</p>
+                <h2 id="voice-assistant-title">Freie Fahrzeugdiktation</h2>
+                <p class="muted">Nenne Feldpaare fortlaufend – sie werden direkt in dieses Formular übernommen.</p>
               </div>
             </div>
-            <div class="voice-progress-copy"><span id="voice-progress-label">Bereit zum Start</span><span id="voice-progress-count">0 von 19</span></div>
-            <div class="voice-progress" role="progressbar" aria-label="Fortschritt der Spracherfassung" aria-valuemin="0" aria-valuemax="19" aria-valuenow="0"><span id="voice-progress-bar"></span></div>
-            <div class="voice-prompt" aria-live="polite" aria-atomic="true"><span class="voice-prompt-label">Sprachassistent</span><strong id="voice-question">Starte die Erfassung, wenn du bereit bist.</strong><p id="voice-transcript" class="voice-transcript"></p></div>
+            <div class="voice-progress-copy"><span id="voice-progress-label">Bereit zum Start</span><span id="voice-progress-count">0 von 20 Feldern</span></div>
+            <div class="voice-progress" role="progressbar" aria-label="Fortschritt der freien Diktation" aria-valuemin="0" aria-valuemax="20" aria-valuenow="0"><span id="voice-progress-bar"></span></div>
+            <div class="voice-prompt" aria-live="polite" aria-atomic="true"><span class="voice-prompt-label">Freie Diktation</span><strong id="voice-question">Starte die freie Diktation und nenne Feldpaare in deinem Tempo.</strong><p id="voice-transcript" class="voice-transcript"></p></div>
             <div class="voice-controls" aria-label="Steuerung der Spracherfassung">
               <button id="voice-start" class="voice-start" type="button">▶ Start</button>
               <button id="voice-repeat" class="secondary" type="button">↻ Wiederholen</button>
-              <button id="voice-skip" class="secondary" type="button">→ Überspringen</button>
-              <button id="voice-finish" class="secondary voice-finish" type="button">✓ Fertig & prüfen</button>
+              <button id="voice-skip" class="secondary" type="button">→ Weiter</button>
+              <button id="voice-finish" class="secondary voice-finish" type="button">✓ Fertig</button>
               <button id="voice-cancel" class="secondary" type="button">Abbrechen</button>
             </div>
-            <p class="voice-help">Sage jederzeit „überspringen“, „wiederholen“, „fertig“ oder „abbrechen“. „Fertig“ beendet sofort die Fragen; deine bisherigen Eingaben bleiben zur Prüfung erhalten und werden nicht automatisch gespeichert.</p>
+            <p class="voice-help">Beispiel: „Marke Ford, Modell Fiesta, Baureihe MK sieben, Generation zweitausendzwei, Baujahr zweitausendvierzehn, Kilometer hundertzwanzigtausend“. Sage „weiter“, „wiederholen“, „lösche [Feld]“, „fertig“ oder „abbrechen“. Nach „fertig“ fragt CarsAutoHaus einmal „Bist du fertig?“ – gespeichert wird nie automatisch.</p>
             <p id="voice-fallback" class="voice-fallback" role="status"></p>
           </section>
           <div class="form-section"><div class="section-heading"><h2>Fahrzeugdaten</h2></div><div class="form-grid">
@@ -267,7 +273,7 @@
       </section>
 
       <section id="detail-view" class="view"><div id="detail-content"></div></section>
-      <section id="profile-view" class="view"><div class="hero"><div><h1>Gemeinsamer Bestand</h1><p class="subtitle">Ein Passwort, ein live synchronisierter Fahrzeugbestand.</p></div></div><div class="card form-card"><div class="form-section"><h2>Aktiver Zugang</h2><label>Zugriffsart<input id="name-setting" value="Gemeinsamer Zugriff" readonly /></label><p class="muted" style="margin-top:12px">Alle Änderungen werden sicher im gemeinsamen Datenspeicher gespeichert und auf anderen berechtigten Geräten aktualisiert.</p></div><div class="form-section"><h2>Datenverwaltung</h2><p class="muted">Exportiere den aktuellen Fahrzeugbestand. Das vollständige Zurücksetzen ist nur direkt über die Datenablage möglich, damit niemand versehentlich den gemeinsamen Bestand löscht.</p><div class="form-actions"><button class="secondary" id="profile-export">CSV exportieren</button></div><label style="margin-top:16px">Bestehende AutoValue-Sicherung übernehmen<input id="backup-import" type="file" accept="application/json,.json" /></label><p class="muted" style="margin-top:8px">Liest den bisherigen Inhalt von <code>data/autovalue-pro.json</code> ein und führt Fahrzeuge sowie Aufgaben anhand ihrer Änderungszeit zusammen.</p></div></div></section>
+      <section id="profile-view" class="view"><div class="hero"><div><h1>Gemeinsamer Bestand</h1><p class="subtitle">Ein Passwort, ein live synchronisierter Fahrzeugbestand.</p></div></div><div class="card form-card"><div class="form-section"><h2>Aktiver Zugang</h2><label>Zugriffsart<input id="name-setting" value="Gemeinsamer Zugriff" readonly /></label><p class="muted" style="margin-top:12px">Alle Änderungen werden sicher im gemeinsamen Datenspeicher gespeichert und auf anderen berechtigten Geräten aktualisiert.</p></div><div class="form-section"><h2>Datenverwaltung</h2><p class="muted">Exportiere den aktuellen Fahrzeugbestand. Das vollständige Zurücksetzen ist nur direkt über die Datenablage möglich, damit niemand versehentlich den gemeinsamen Bestand löscht.</p><div class="form-actions"><button class="secondary" id="profile-export">CSV exportieren</button></div><label style="margin-top:16px">Bestehende CarsAutoHaus-Sicherung übernehmen<input id="backup-import" type="file" accept="application/json,.json" /></label><p class="muted" style="margin-top:8px">Liest den bisherigen Inhalt einer lokalen Bestandssicherung ein und führt Fahrzeuge sowie Aufgaben anhand ihrer Änderungszeit zusammen.</p></div></div></section>
     </main>
     <nav class="bottom-nav"><div class="nav-inner"><button class="nav-button active" data-go="home"><span class="nav-icon">⌂</span>Home</button><button class="nav-button" data-go="autos"><span class="nav-icon">🚗</span>Autos</button><button class="nav-button" data-go="search"><span class="nav-icon">⌕</span>Suche</button><button class="nav-button" data-go="statistics"><span class="nav-icon">▥</span>Statistik</button><button class="nav-button" data-go="profile"><span class="nav-icon">◉</span>Profil</button></div></nav>
     <button id="mobile-new" class="mobile-fab" aria-label="Neues Fahrzeug">＋</button>
@@ -278,6 +284,7 @@
     <script src="config.js"></script>
     <script type="module" src="app.js"></script>
     <script src="voice-assistant.js" defer></script>
+    <script src="free-dictation.js" defer></script>
   </body>
 </html>
 

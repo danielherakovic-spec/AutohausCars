@@ -1,4 +1,4 @@
-# AutoValue Pro – gemeinsames Passwort ohne Edge Function
+# CarsAutoHaus – gemeinsames Passwort ohne Edge Function
 
 Diese Ausgabe öffnet den gemeinsamen Fahrzeugbestand mit einem einzigen Passwort, **ohne Supabase Edge Function**. Der Browser meldet sich dafür nur anonym bei Supabase an und ruft anschließend eine sichere Datenbankfunktion (`av_enter_shared_workspace`) auf. Nach erfolgreicher Passwortprüfung erhält genau diese anonyme Sitzung die bestehende Workspace-Mitgliedschaft.
 
@@ -13,14 +13,20 @@ Fahrzeuge, Aufgaben, Realtime-Updates und private Fotos bleiben in Supabase. Das
 
 Der Publishable/Anon Key in `config.js` ist für Browser vorgesehen und kein Geheimnis. Niemals Passwort, Service-Role-Key oder Secret-Key eintragen oder committen.
 
-## Fahrzeug per Sprache erfassen
+## Freie Fahrzeugdiktation
 
-Öffne **Neues Auto** und wähle im Formular **Fahrzeug per Sprache erfassen → Start**. Der Assistent fragt die wichtigsten Angaben nacheinander ab, darunter Marke, Modell, Baureihe/Generation, Erstzulassung, Baujahr, Kilometerstand, Kraftstoff, Getriebe, Leistung, Farbe sowie Ein- und Verkaufspreis. Antworten werden direkt in die vorhandenen Felder übernommen und bleiben jederzeit manuell änderbar.
+Öffne **Neues Auto** und wähle im Formular **Freie Fahrzeugdiktation → Start**. CarsAutoHaus hört anschließend fortlaufend zu: Es gibt keine feste Frage-Antwort-Reihenfolge und keine Wartezeit zwischen den Angaben. Sage beliebig viele beschriftete Feldpaare direkt hintereinander, zum Beispiel:
 
-- Sage jederzeit **„überspringen“**, **„wiederholen“**, **„fertig“** oder **„abbrechen“** – dieselben Steuerelemente sind sichtbar im Formular vorhanden.
-- **„Fertig“** beendet die Fragerunde sofort. Die bisherigen Antworten bleiben im geöffneten Formular zur Prüfung; es wird ausdrücklich **nicht automatisch gespeichert**.
+> „Marke Ford, Modell Fiesta, Baureihe MK sieben, Generation zweitausendzwei, Erstzulassung März zweitausendvierzehn, Kilometer hundertzwanzigtausend, Leistung einhundertfünfzig PS, Kraftstoff Benzin, Getriebe Handschaltung, Einkaufspreis viertausendzweihundert, Verkaufspreis sechstausenddreihundert.“
+
+Bereits vollständige Paare werden auch aus Zwischenergebnissen übernommen. Damit reagiert die Erfassung schnell auf lange, flüssig gesprochene Listen und startet nach natürlichen Erkennungspausen automatisch erneut.
+
+- Unterstützte Feldbezeichnungen und Synonyme umfassen **Marke/Hersteller**, **Modell**, **Baureihe/Serie**, **Generation**, **Erstzulassung/EZ**, **Baujahr**, **Kilometer/KM**, **Leistung/PS/KW**, **Kraftstoff**, **Getriebe**, **Antrieb**, **Farbe**, **Halter/Vorhalter**, **Ort/Standort**, **Angebots-/Einkaufs-/Verkaufspreis**, **Status** und **Notiz/Bemerkung**.
+- Gesprochene deutsche Zahlen werden für Jahre, Kilometer, Leistung und Preise verarbeitet; PS und kW werden jeweils in beide Leistungsfelder übertragen. Die Erstzulassung übernimmt bei vorhandener Jahresangabe auch das Baujahr.
+- **„weiter“** hält die freie Diktation aktiv, **„wiederholen“** gibt die letzte erkannte Eingabe aus, **„lösche [Feld]“** leert ein Feld, und eine erneute Feldangabe korrigiert dessen bisherigen Wert.
+- Bei **„fertig“** stoppt CarsAutoHaus zunächst und fragt sichtbar sowie gesprochen **„Bist du fertig?“**. Nur bei **„Ja“** endet die Diktation; bei **„Nein“** wird sofort weiter zugehört. Es gibt zu keinem Zeitpunkt eine automatische Speicherung.
 - Die Funktion nutzt ausschließlich die Web Speech API des Browsers und die lokale Sprachsynthese. Es gibt keinen KI-Dienst, keine Kosten und keine Supabase-/RPC-Änderung.
-- Erlaube beim Start den Mikrofonzugriff. In Browsern ohne Web-Spracherkennung oder bei blockiertem Mikrofon bleibt das vollständige Formular als manuelle, funktionsgleiche Alternative verfügbar. Für die beste Unterstützung nutze einen aktuellen Chrome- oder Edge-Browser über HTTPS.
+- Erlaube beim Start den Mikrofonzugriff. In Browsern ohne Web-Spracherkennung, bei blockiertem Mikrofon oder ohne HTTPS bleibt das vollständige Formular als manuelle Alternative verfügbar. Für die beste Unterstützung nutze einen aktuellen Chrome- oder Edge-Browser über HTTPS.
 
 ## Bestehendes Projekt reparieren
 
