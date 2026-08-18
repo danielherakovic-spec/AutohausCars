@@ -106,6 +106,30 @@
       .check-label input { width:17px; height:17px; min-height:17px; margin:0; accent-color:var(--blue); }
       .cost-summary { display:grid; grid-template-columns:repeat(4,1fr); gap:10px; padding:14px; background:#0b1420; border:1px solid var(--line); border-radius:14px; }
       .cost-summary span { color:var(--muted); font-size:.75rem; } .cost-summary b { display:block; margin-top:5px; font-size:1.03rem; }
+      .voice-assistant { margin:0 0 22px; padding:18px; border:1px solid #315477; border-radius:17px; background:linear-gradient(135deg,rgba(21,58,104,.72),rgba(15,24,36,.96)); box-shadow:inset 0 1px 0 rgba(255,255,255,.05); }
+      .voice-assistant.is-listening { border-color:#48b9ff; box-shadow:0 0 0 3px rgba(72,185,255,.13),inset 0 1px 0 rgba(255,255,255,.06); }
+      .voice-assistant.is-speaking { border-color:#7eaef0; }
+      .voice-assistant.is-error { border-color:#a65a68; background:linear-gradient(135deg,rgba(86,30,44,.45),rgba(15,24,36,.96)); }
+      .voice-assistant-head { display:flex; align-items:flex-start; gap:13px; }
+      .voice-icon { display:grid; flex:0 0 auto; place-items:center; width:44px; height:44px; border-radius:14px; color:#d9efff; background:linear-gradient(145deg,#2586f7,#1554ae); font-size:1.25rem; box-shadow:0 9px 19px rgba(37,134,247,.25); }
+      .voice-assistant h2 { margin:0 0 4px; }
+      .voice-assistant p { margin:0; }
+      .voice-progress-copy { display:flex; justify-content:space-between; gap:12px; margin-top:17px; color:#cbd8e7; font-size:.8rem; }
+      .voice-progress { height:7px; margin-top:8px; overflow:hidden; border-radius:999px; background:#0b1420; }
+      .voice-progress > span { display:block; width:0; height:100%; border-radius:inherit; background:linear-gradient(90deg,#2586f7,#5ab6ff); transition:width .22s ease; }
+      .voice-prompt { min-height:74px; margin-top:14px; padding:13px 14px; border:1px solid rgba(82,121,160,.48); border-radius:13px; background:rgba(7,14,23,.56); }
+      .voice-prompt-label { display:block; margin-bottom:4px; color:#8fbce8; font-size:.74rem; font-weight:800; letter-spacing:.05em; text-transform:uppercase; }
+      .voice-prompt strong { display:block; line-height:1.42; }
+      .voice-transcript { min-height:20px; margin:9px 0 0; color:#b9d6ee; font-size:.83rem; }
+      .voice-transcript:empty { display:none; }
+      .voice-controls { display:flex; flex-wrap:wrap; gap:8px; margin-top:15px; }
+      .voice-controls button { min-height:40px; padding:0 12px; }
+      .voice-controls .voice-start { color:#fff; border:0; background:#2586f7; }
+      .voice-controls .voice-finish { color:#bff8dc; border-color:rgba(47,203,137,.5); }
+      .voice-help, .voice-fallback { margin-top:12px !important; color:#aebfd2; font-size:.78rem; line-height:1.45; }
+      .voice-fallback { display:none; padding:10px 11px; border:1px solid rgba(240,99,114,.42); border-radius:10px; color:#ffd0d6; background:rgba(104,34,46,.28); }
+      .voice-fallback.show { display:block; }
+      .voice-field-active { border-color:#5ab6ff !important; box-shadow:0 0 0 3px rgba(72,185,255,.13) !important; }
       .profit-positive { color:var(--green); } .profit-negative { color:var(--red); }
       .form-actions { display:flex; justify-content:flex-end; gap:10px; padding-top:20px; }
       .details-header { display:flex; align-items:flex-start; justify-content:space-between; gap:14px; }
@@ -144,7 +168,7 @@
       .sync-status { display:flex; align-items:center; gap:7px; color:var(--muted); font-size:.78rem; }
       .sync-dot { width:8px; height:8px; border-radius:50%; background:var(--yellow); } .sync-dot.online { background:var(--green); box-shadow:0 0 0 4px rgba(47,203,137,.12); } .sync-dot.error { background:var(--red); }
       @media (max-width:920px) { .stats-grid { grid-template-columns:repeat(3,1fr); } .vehicle-grid { grid-template-columns:repeat(2,1fr); } .checkboxes { grid-template-columns:repeat(3,1fr); } .form-grid { grid-template-columns:repeat(2,1fr); } }
-      @media (max-width:620px) { .app { padding-left:14px; padding-right:14px; padding-bottom:128px; } .topbar { height:63px; } .topbar .brand-mark { width:33px; height:33px; } .sync-status span:last-child { display:none; } .hero { padding:21px 0 16px; } .hero .primary { min-width:46px; padding:0 13px; font-size:0; } .hero .primary::before { content:'＋'; font-size:1.45rem; } .stats-grid { grid-template-columns:repeat(2,1fr); gap:9px; } .stat { min-height:96px; padding:14px; } .stat strong { font-size:1.22rem; } .quick-grid { grid-template-columns:repeat(2,1fr); gap:9px; } .quick { min-height:104px; padding:14px; } .split { grid-template-columns:1fr; gap:12px; } .vehicle-grid { grid-template-columns:1fr; } .form-grid { grid-template-columns:1fr; gap:11px; } .checkboxes,.detail-grid,.cost-summary { grid-template-columns:1fr 1fr; gap:9px; } .form-card { padding:15px; } .form-section { padding:18px 0; } label { font-size:.82rem; } label input,label select { min-height:52px; font-size:1rem; } .toolbar { flex-wrap:nowrap; overflow-x:auto; padding:2px 1px 9px; margin-right:-14px; } .toolbar .search { min-width:260px; } .toolbar .filter { flex:0 0 150px; } .vehicle-card { display:grid; grid-template-columns:128px 1fr; min-height:140px; } .vehicle-cover { height:100%; min-height:140px; border-radius:17px 0 0 17px; } .vehicle-body { align-self:center; } .vehicle-price { margin:7px 0 5px; } .details-header { flex-direction:column; } .details-title { align-items:flex-start; } .two-col { grid-template-columns:1fr; } .modal { padding:16px; border-radius:18px; } .auth-card { padding:21px; } .compare-list { overflow:hidden; } .compare-item { grid-template-columns:1fr auto; gap:8px; } .compare-item .score { grid-column:2; } .section-heading { align-items:flex-start; } .section-heading .secondary { min-height:40px; padding:0 10px; font-size:.78rem; } .mobile-fab { display:grid; place-items:center; position:fixed; z-index:24; right:18px; bottom:80px; width:58px; height:58px; color:#fff; border:0; border-radius:20px; background:var(--blue); box-shadow:0 14px 30px rgba(37,134,247,.38); font-size:1.9rem; } .mobile-form-save { display:block; position:fixed; z-index:25; right:14px; left:14px; bottom:72px; width:calc(100% - 28px); min-height:52px; color:#fff; border:0; border-radius:16px; background:var(--blue); box-shadow:0 13px 28px rgba(37,134,247,.32); font-weight:800; } .mobile-form-save[hidden] { display:none; } }
+      @media (max-width:620px) { .app { padding-left:14px; padding-right:14px; padding-bottom:128px; } .topbar { height:63px; } .topbar .brand-mark { width:33px; height:33px; } .sync-status span:last-child { display:none; } .hero { padding:21px 0 16px; } .hero .primary { min-width:46px; padding:0 13px; font-size:0; } .hero .primary::before { content:'＋'; font-size:1.45rem; } .stats-grid { grid-template-columns:repeat(2,1fr); gap:9px; } .stat { min-height:96px; padding:14px; } .stat strong { font-size:1.22rem; } .quick-grid { grid-template-columns:repeat(2,1fr); gap:9px; } .quick { min-height:104px; padding:14px; } .split { grid-template-columns:1fr; gap:12px; } .vehicle-grid { grid-template-columns:1fr; } .form-grid { grid-template-columns:1fr; gap:11px; } .checkboxes,.detail-grid,.cost-summary { grid-template-columns:1fr 1fr; gap:9px; } .form-card { padding:15px; } .form-section { padding:18px 0; } label { font-size:.82rem; } label input,label select { min-height:52px; font-size:1rem; } .toolbar { flex-wrap:nowrap; overflow-x:auto; padding:2px 1px 9px; margin-right:-14px; } .toolbar .search { min-width:260px; } .toolbar .filter { flex:0 0 150px; } .vehicle-card { display:grid; grid-template-columns:128px 1fr; min-height:140px; } .vehicle-cover { height:100%; min-height:140px; border-radius:17px 0 0 17px; } .vehicle-body { align-self:center; } .vehicle-price { margin:7px 0 5px; } .details-header { flex-direction:column; } .details-title { align-items:flex-start; } .two-col { grid-template-columns:1fr; } .modal { padding:16px; border-radius:18px; } .auth-card { padding:21px; } .compare-list { overflow:hidden; } .compare-item { grid-template-columns:1fr auto; gap:8px; } .section-heading { align-items:flex-start; } .section-heading .secondary { min-height:40px; padding:0 10px; font-size:.78rem; } .voice-assistant { padding:15px; margin-bottom:18px; } .voice-assistant-head { gap:10px; } .voice-controls { display:grid; grid-template-columns:1fr 1fr; } .voice-controls button { width:100%; } .voice-progress-copy { font-size:.76rem; } .mobile-fab { display:grid; place-items:center; position:fixed; z-index:24; right:18px; bottom:80px; width:58px; height:58px; color:#fff; border:0; border-radius:20px; background:var(--blue); box-shadow:0 14px 30px rgba(37,134,247,.38); font-size:1.9rem; } .mobile-form-save { display:block; position:fixed; z-index:25; right:14px; left:14px; bottom:72px; width:calc(100% - 28px); min-height:52px; color:#fff; border:0; border-radius:16px; background:var(--blue); box-shadow:0 13px 28px rgba(37,134,247,.32); font-weight:800; } .mobile-form-save[hidden] { display:none; } }
     </style>
   </head>
   <body class="locked">
@@ -204,6 +228,27 @@
         <div class="hero"><div><h1 id="form-heading">Neues Auto hinzufügen</h1><p class="subtitle">Erfasse alles Wichtige – die Bewertung wird direkt berechnet.</p></div><button class="secondary" data-go="autos">Abbrechen</button></div>
         <form id="vehicle-form" class="card form-card">
           <input id="vehicle-id" type="hidden" />
+          <section id="voice-assistant" class="voice-assistant" aria-labelledby="voice-assistant-title">
+            <div class="voice-assistant-head">
+              <div class="voice-icon" aria-hidden="true">◉</div>
+              <div>
+                <h2 id="voice-assistant-title">Fahrzeug per Sprache erfassen</h2>
+                <p class="muted">Ich stelle kurze Fragen und übernehme deine Antworten direkt in dieses Formular.</p>
+              </div>
+            </div>
+            <div class="voice-progress-copy"><span id="voice-progress-label">Bereit zum Start</span><span id="voice-progress-count">0 von 19</span></div>
+            <div class="voice-progress" role="progressbar" aria-label="Fortschritt der Spracherfassung" aria-valuemin="0" aria-valuemax="19" aria-valuenow="0"><span id="voice-progress-bar"></span></div>
+            <div class="voice-prompt" aria-live="polite" aria-atomic="true"><span class="voice-prompt-label">Sprachassistent</span><strong id="voice-question">Starte die Erfassung, wenn du bereit bist.</strong><p id="voice-transcript" class="voice-transcript"></p></div>
+            <div class="voice-controls" aria-label="Steuerung der Spracherfassung">
+              <button id="voice-start" class="voice-start" type="button">▶ Start</button>
+              <button id="voice-repeat" class="secondary" type="button">↻ Wiederholen</button>
+              <button id="voice-skip" class="secondary" type="button">→ Überspringen</button>
+              <button id="voice-finish" class="secondary voice-finish" type="button">✓ Fertig & prüfen</button>
+              <button id="voice-cancel" class="secondary" type="button">Abbrechen</button>
+            </div>
+            <p class="voice-help">Sage jederzeit „überspringen“, „wiederholen“, „fertig“ oder „abbrechen“. „Fertig“ beendet sofort die Fragen; deine bisherigen Eingaben bleiben zur Prüfung erhalten und werden nicht automatisch gespeichert.</p>
+            <p id="voice-fallback" class="voice-fallback" role="status"></p>
+          </section>
           <div class="form-section"><div class="section-heading"><h2>Fahrzeugdaten</h2></div><div class="form-grid">
             <label>Marke *<input name="brand" required placeholder="z. B. Ford" /></label><label>Modell *<input name="model" required placeholder="z. B. Fiesta" /></label><label>Baureihe<input name="series" placeholder="z. B. MK7" /></label>
             <label>Generation<input name="generation" /></label><label>Karosserie<input name="body" placeholder="Kleinwagen" /></label><label>Farbe<input name="color" /></label>
@@ -232,6 +277,7 @@
     <div id="compare-modal" class="modal-backdrop"><div class="modal"><div class="modal-head"><div><h2>Fahrzeuge vergleichen</h2><p class="muted">Die Unterschiede sind aus Sicht des ausgewählten Fahrzeugs eingefärbt.</p></div><button class="close-x" data-close-modal>×</button></div><div id="compare-modal-content"></div></div></div>
     <script src="config.js"></script>
     <script type="module" src="app.js"></script>
+    <script src="voice-assistant.js" defer></script>
   </body>
 </html>
 

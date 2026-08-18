@@ -13,6 +13,15 @@ Fahrzeuge, Aufgaben, Realtime-Updates und private Fotos bleiben in Supabase. Das
 
 Der Publishable/Anon Key in `config.js` ist für Browser vorgesehen und kein Geheimnis. Niemals Passwort, Service-Role-Key oder Secret-Key eintragen oder committen.
 
+## Fahrzeug per Sprache erfassen
+
+Öffne **Neues Auto** und wähle im Formular **Fahrzeug per Sprache erfassen → Start**. Der Assistent fragt die wichtigsten Angaben nacheinander ab, darunter Marke, Modell, Baureihe/Generation, Erstzulassung, Baujahr, Kilometerstand, Kraftstoff, Getriebe, Leistung, Farbe sowie Ein- und Verkaufspreis. Antworten werden direkt in die vorhandenen Felder übernommen und bleiben jederzeit manuell änderbar.
+
+- Sage jederzeit **„überspringen“**, **„wiederholen“**, **„fertig“** oder **„abbrechen“** – dieselben Steuerelemente sind sichtbar im Formular vorhanden.
+- **„Fertig“** beendet die Fragerunde sofort. Die bisherigen Antworten bleiben im geöffneten Formular zur Prüfung; es wird ausdrücklich **nicht automatisch gespeichert**.
+- Die Funktion nutzt ausschließlich die Web Speech API des Browsers und die lokale Sprachsynthese. Es gibt keinen KI-Dienst, keine Kosten und keine Supabase-/RPC-Änderung.
+- Erlaube beim Start den Mikrofonzugriff. In Browsern ohne Web-Spracherkennung oder bei blockiertem Mikrofon bleibt das vollständige Formular als manuelle, funktionsgleiche Alternative verfügbar. Für die beste Unterstützung nutze einen aktuellen Chrome- oder Edge-Browser über HTTPS.
+
 ## Bestehendes Projekt reparieren
 
 Diese Schritte gelten, wenn die frühere `shared-password-migration.sql` bereits ausgeführt wurde, Anonymous Sign-Ins aktiviert sind und `enter-shared-workspace` erfolglos bereitgestellt wurde.
