@@ -92,6 +92,12 @@ Für einen sofortigen vollständigen Entzug lösche unter **Authentication → U
 - **Inserat-Schnellübernahme:** Im Formular „Neues Auto“ stehen zwei getrennte Einfügefelder bereit. Das erste liest kopierte technische Fahrzeugdaten im üblichen Portalformat aus und füllt die passenden Formularfelder. Das zweite verarbeitet eine zeilenweise Ausstattungsliste, berücksichtigt gebräuchliche Schreibweisen wie „Elektr. Fensterheber“ oder „Start/Stopp-Automatik“ und setzt die passenden Häkchen. Die Übernahme speichert nie automatisch; der Datensatz bleibt bis zum normalen Klick auf **Fahrzeug speichern** ein prüfbarer Formularentwurf.
 - **Gemeinsamer Chat:** Der Schnellzugriff **Chat** öffnet einen einfachen, synchronisierten Verlauf für alle berechtigten Nutzer. Nachricht schreiben und mit Enter oder dem Senden-Button abschicken; Umschalt + Enter erzeugt eine neue Zeile. Nachrichten enthalten Verfasser und Zeit, sind durchsuchbar und bleiben ohne Löschfunktion dauerhaft im gemeinsamen Supabase-Datenbestand, solange dieser nicht administrativ zurückgesetzt wird.
 
+### Chat und Betriebszentrale dauerhaft synchronisieren
+
+Die bisherige Funktion `av_save_workspace_state` speichert absichtlich nur Fahrzeuge und Aufgaben. Damit Chat, Notizen und die weiteren Betriebsdaten ebenfalls geräteübergreifend erhalten bleiben, führe einmalig [`supabase/operations-state-rpc-migration.sql`](supabase/operations-state-rpc-migration.sql) im Supabase SQL Editor aus. Die Migration ersetzt weder die Passwort-RPC noch die Konfiguration; sie ergänzt `av_save_workspace_state_v2` und führt parallele Chatnachrichten anhand ihrer IDs zusammen.
+
+Ohne diese einmalige Migration bewahrt die App den Chat auf dem aktuellen Gerät im Browser-Speicher auf und kennzeichnet ihn sichtbar als **Dauerhaft auf diesem Gerät**. Nach erfolgreicher Migration steht dort **Dauerhaft & gemeinsam**.
+
 Für Ankaufentscheidungen bleiben Besichtigung, Probefahrt, Unterlagen-, Historien- und technische Prüfung unverzichtbar. Die Rangfolge verwendet nur die Daten, die in CarsAutoHaus erfasst wurden.
 
 - `index.html`, `app.js`, `config.js`: statische Browser-App ohne Edge-Function-Aufrufe.
