@@ -28,6 +28,23 @@ Bereits vollständige Paare werden auch aus Zwischenergebnissen übernommen. Dam
 - Die Funktion nutzt ausschließlich die Web Speech API des Browsers und die lokale Sprachsynthese. Es gibt keinen KI-Dienst, keine Kosten und keine Supabase-/RPC-Änderung.
 - Erlaube beim Start den Mikrofonzugriff. In Browsern ohne Web-Spracherkennung, bei blockiertem Mikrofon oder ohne HTTPS bleibt das vollständige Formular als manuelle Alternative verfügbar. Für die beste Unterstützung nutze einen aktuellen Chrome- oder Edge-Browser über HTTPS.
 
+## Betriebszentrale: Ankauf, Bestand, Buchhaltung und Standorte
+
+Die Erweiterung ergänzt CarsAutoHaus um einen zusammenhängenden operativen Arbeitsbereich. Alle neuen Daten werden innerhalb des bestehenden gemeinsamen Bestands gespeichert; an Supabase-Konfiguration, Passwort-RPC oder RLS wurde nichts geändert.
+
+- **Ankauf & Marktprüfung:** Ankaufkandidaten aus manuellen Angaben oder der Importwarteschlange mit interner Preisreferenz, Mängelreserve, konservativem Einkaufslimit und nachvollziehbarem Score prüfen. Die Analyse ist eine transparente Vorentscheidung und ersetzt keine technische Prüfung, Probefahrt, Dokumentenprüfung oder externe Marktanalyse.
+- **Import-Hub:** Inserate von mobile.de, AutoScout24, Händlerlisten oder manuellen Quellen zunächst als kontrollierbaren Vorschlag ablegen und erst danach einzeln in den Bestand übernehmen. Strukturierte JSON- und CSV-Dateien können vorbefüllt werden.
+- **Bestand & Beobachtung:** Operative Nachbereitung für aktive Fahrzeugakten, Aufbereitung, Besichtigung und beobachtete Ankaufkandidaten.
+- **Buchhaltung:** Kassenbuch mit Einnahmen/Ausgaben, Fahrzeugbezug, Notiz und Belegimport bis 500 KB je Eintrag; Rechnungsentwürfe und ein Kassenbuch-CSV-Export für die weitere Verarbeitung.
+- **DATEV-Vorbereitung:** Die Oberfläche dokumentiert den Einrichtungsstatus und bereitet Buchungsdaten/Belege für die Abstimmung vor. Eine Live-Übertragung ist bewusst erst nach offiziellem DATEV-Entwicklerzugang, OAuth, Mandantenfreigabe und Partnerfreigabe vorgesehen. DATEV beschreibt für Beleg- und Buchungsdaten eigene Datenservices, Berechtigungsprüfungen und Freigabevorgaben.
+- **Showrooms:** Standorte mit Kapazität, Status und Fahrzeugzuordnung verwalten.
+- **Dokumente:** Druckbare Entwürfe für Kaufvertrag, Übergabeprotokoll, Reservierung und Rechnung. Diese sind ausdrücklich **keine zugesicherten rechtssicheren Vorlagen** und müssen vor geschäftlicher Nutzung für den konkreten Fall fachlich und rechtlich geprüft werden.
+- **Mobile Verwaltung:** Die responsive PWA kann auf mobilen Geräten genutzt werden; alle berechtigten Geräte arbeiten über den gemeinsamen Bestand. Der Gerätecode ist nur ein organisatorischer Einrichtungsnachweis, kein Login-Token.
+
+### Live-Portal- und Kontoverknüpfungen
+
+Die Anwendung speichert weder Portalpasswörter noch API-Geheimnisse im Browser und führt kein unautorisiertes Scraping durch. Für eine produktive Kontoverknüpfung von mobile.de oder AutoScout24 sind ein offizieller Händler-/Partnerzugang, ein serverseitiger OAuth-Rückruf, verschlüsselte Tokenablage, die jeweiligen Nutzungsbedingungen und ein Sandbox-Test erforderlich. Die Integrationsansicht legt diese Schritte transparent als Vorbereitung ab.
+
 ## Bestehendes Projekt reparieren
 
 Diese Schritte gelten, wenn die frühere `shared-password-migration.sql` bereits ausgeführt wurde, Anonymous Sign-Ins aktiviert sind und `enter-shared-workspace` erfolglos bereitgestellt wurde.
