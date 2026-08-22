@@ -238,6 +238,15 @@
         <div class="hero"><div><h1 id="form-heading">Neues Auto hinzufügen</h1><p class="subtitle">Erfasse alles Wichtige – die Bewertung wird direkt berechnet.</p></div><button class="secondary" data-go="autos">Abbrechen</button></div>
         <form id="vehicle-form" class="card form-card">
           <input id="vehicle-id" type="hidden" />
+          <section class="form-section" aria-labelledby="paste-import-title">
+            <div class="section-heading"><div><h2 id="paste-import-title">Inserat schnell übernehmen</h2><p class="muted">Kopierte Angaben einfügen, prüfen und anschließend wie gewohnt selbst speichern.</p></div></div>
+            <div class="form-grid">
+              <label>Fahrzeugdaten einfügen<textarea id="listing-data-paste" placeholder="Kilometerstand&#10;49.941 km&#10;Leistung&#10;55 kW (75 PS)&#10;Kraftstoffart&#10;Benzin&#10;…"></textarea></label>
+              <label>Ausstattung einfügen<textarea id="equipment-data-paste" placeholder="Ausstattung&#10;- ABS&#10;- Klimaanlage&#10;- Multifunktionslenkrad&#10;…"></textarea></label>
+            </div>
+            <div class="form-actions"><button id="parse-listing-data" type="button" class="secondary">Fahrzeugdaten übernehmen</button><button id="parse-equipment-data" type="button" class="secondary">Ausstattung abhaken</button><button id="parse-all-data" type="button" class="primary">Beides übernehmen</button></div>
+            <p id="paste-import-status" class="muted" role="status" aria-live="polite"></p>
+          </section>
           <section id="voice-assistant" class="voice-assistant" aria-labelledby="voice-assistant-title">
             <div class="voice-assistant-head">
               <div class="voice-icon" aria-hidden="true">◉</div>
@@ -268,6 +277,9 @@
             <label>Hubraum (cm³)<input name="displacement" type="number" min="0" /></label><label>Getriebe<select name="gearbox"><option value="">Bitte wählen</option><option>Automatik</option><option>Handschaltung</option><option>DSG</option><option>CVT</option><option>Sonstiges</option></select></label><label>Kraftstoff<input name="fuel" placeholder="Benzin, Diesel, Elektro …" /></label>
             <label>Antrieb<input name="drive" placeholder="Front, Heck, Allrad" /></label><label>Euro-Norm<input name="euroNorm" /></label><label>HU/TÜV bis<input name="inspection" type="month" /></label>
             <label>Anzahl Halter<input name="owners" type="number" min="0" /></label><label>CO₂ (g/km)<input name="co2" type="number" min="0" /></label><label>Verbrauch (l/100km)<input name="consumption" type="number" min="0" step="0.1" /></label>
+            <label>Fahrzeugnummer<input name="vehicleNumber" /></label><label>Verfügbarkeit<input name="availability" /></label><label>Herkunft<input name="origin" /></label>
+            <label>Sitzplätze<input name="seats" type="number" min="0" /></label><label>Türen<input name="doors" /></label><label>Innenausstattung<input name="interior" placeholder="z. B. Stoff, Schwarz" /></label>
+            <label>Herstellerfarbe<input name="manufacturerColor" /></label><label>Zylinder<input name="cylinders" type="number" min="0" /></label><label>Umweltplakette<input name="environmentalBadge" /></label><label>HU-Hinweis<input name="inspectionStatus" placeholder="z. B. Neu" /></label>
           </div></div>
           <div class="form-section"><div class="section-heading"><div><h2>Ausstattung & Zustand</h2><p class="muted">Extras schnell finden und den technischen sowie optischen Zustand nachvollziehbar erfassen.</p></div></div><div class="form-actions" style="margin:0 0 12px"><input id="equipment-search" type="search" placeholder="Ausstattung suchen, z. B. Kamera, Leder, ACC" aria-label="Ausstattung suchen" /><button id="equipment-search-clear" type="button" class="secondary">Suche löschen</button></div><div id="equipment-checkboxes" class="checkboxes"></div><div class="checkboxes" style="margin-top:9px"><label class="check-label"><input type="checkbox" name="accidentFree" /> Unfallfrei</label><label class="check-label"><input type="checkbox" name="serviceBook" /> Scheckheft</label><label class="check-label"><input type="checkbox" name="garage" /> Garagenfahrzeug</label><label class="check-label"><input type="checkbox" name="nonSmoker" /> Nichtraucher</label><label class="check-label"><input type="checkbox" name="imported" /> Import</label><label class="check-label"><input type="checkbox" name="towbar" /> Anhängerkupplung</label></div><div class="form-grid" style="margin-top:14px"><label>Gesamtzustand<select name="conditionOverall"><option value="">Bitte bewerten</option><option>Sehr gut</option><option>Gut</option><option>Gebraucht</option><option>Reparaturbedürftig</option></select></label><label>Karosserie / Lack<select name="bodyCondition"><option value="">Bitte bewerten</option><option>Sehr gut</option><option>Gut</option><option>Gebrauchsspuren</option><option>Schäden vorhanden</option></select></label><label>Innenraum<select name="interiorCondition"><option value="">Bitte bewerten</option><option>Sehr gut</option><option>Gut</option><option>Gebrauchsspuren</option><option>Aufbereitung nötig</option></select></label><label>Technik<select name="technicalCondition"><option value="">Bitte bewerten</option><option>Ohne bekannte Mängel</option><option>Prüfung empfohlen</option><option>Reparatur einplanen</option><option>Nicht fahrbereit</option></select></label><label>Reifen<select name="tiresCondition"><option value="">Bitte bewerten</option><option>Sehr gut</option><option>Ausreichend</option><option>Bald erneuern</option><option>Erneuern</option></select></label><label>Schlüssel<input name="keyCount" type="number" min="0" placeholder="z. B. 2" /></label></div><label style="margin-top:13px">Mängel & Aufbereitungsbedarf<textarea name="defects" placeholder="z. B. Kratzer Stoßfänger, HU prüfen, Reifen vorn erneuern"></textarea></label></div>
           <div class="form-section"><h2>Foto</h2><p class="muted">Das Titelbild wird im gemeinsamen Supabase-Speicher abgelegt.</p><label>Titelbild auswählen<input id="photo-input" type="file" accept="image/*" /></label><input id="photo-data" name="photo" type="hidden" /><div id="photo-preview" class="detail-cover" style="margin-top:12px">🚘</div></div>
@@ -290,6 +302,7 @@
     <script type="module" src="app.js"></script>
     <script src="voice-assistant.js" defer></script>
     <script src="free-dictation.js" defer></script>
+    <script src="listing-paste-import.js" defer></script>
     <script src="operations-suite.js" defer></script>
   </body>
 </html>
