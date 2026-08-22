@@ -3,6 +3,7 @@
 
   let api;
   let selectedNoteVehicleId = '';
+  let chatSearch = '';
   const now = () => new Date().toISOString();
   const number = value => Number(value || 0);
   const money = value => new Intl.NumberFormat('de-DE', { style: 'currency', currency: 'EUR' }).format(number(value));
@@ -24,6 +25,7 @@
       showrooms: [],
       documents: [],
       generalNotes: [],
+      chatMessages: [],
       receiptDraft: null,
       mobile: { pairingCode: '', generatedAt: '' },
     };
@@ -128,7 +130,7 @@
   function inject() {
     const style = document.createElement('style');
     style.textContent = [
-      '.ops-section{margin-top:24px}.ops-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}.ops-grid.two{grid-template-columns:repeat(2,minmax(0,1fr))}.ops-card{padding:18px}.ops-card h3{margin:4px 0 8px}.ops-eyebrow{color:#86c7ff;font-size:.73rem;font-weight:800;letter-spacing:.06em;text-transform:uppercase}.ops-kpi{padding:17px}.ops-kpi span{display:block;color:var(--muted);font-size:.78rem}.ops-kpi b{display:block;margin-top:7px;font-size:1.42rem}.ops-alert{padding:13px 14px;border:1px solid rgba(245,185,88,.35);border-radius:13px;background:rgba(245,185,88,.08);color:#f5d69b;line-height:1.45}.ops-list{display:grid;gap:10px}.ops-row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:13px;border:1px solid var(--line);border-radius:13px;background:#0d151f}.ops-row h3{margin:0 0 4px;font-size:.96rem}.ops-row p{margin:0;color:var(--muted);font-size:.82rem}.ops-actions{display:flex;flex-wrap:wrap;justify-content:flex-end;gap:7px}.ops-score{display:inline-grid;place-items:center;min-width:46px;height:31px;border-radius:999px;background:#163a62;color:#d9efff;font-size:.8rem;font-weight:800}.ops-score.good{background:rgba(47,203,137,.18);color:#a7f2cb}.ops-score.bad{background:rgba(240,99,114,.17);color:#ffc7cf}.ops-note{margin-top:11px;padding:11px 12px;border-left:3px solid #4db9ff;background:rgba(37,134,247,.08);color:#cce5fa;font-size:.84rem;line-height:1.45}.ops-toolbar{display:flex;flex-wrap:wrap;gap:9px;align-items:center;margin-top:14px}.ops-table{width:100%;border-collapse:collapse;font-size:.86rem}.ops-table th,.ops-table td{padding:11px 8px;border-bottom:1px solid var(--line);text-align:left}.ops-table th{color:var(--muted);font-weight:700}.ops-empty{padding:26px 10px;color:var(--muted);text-align:center}.ops-chip{display:inline-flex;align-items:center;min-height:26px;padding:0 9px;border:1px solid var(--line);border-radius:999px;color:#b8d3e9;font-size:.74rem}.ops-warn{color:#f5d69b}.ops-success{color:#a7f2cb}.ops-doc{white-space:pre-wrap;min-height:220px;padding:16px;border:1px solid var(--line);border-radius:14px;background:#0a111a;color:#dce8f5;line-height:1.55}@media(max-width:920px){.ops-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(max-width:620px){.ops-grid,.ops-grid.two{grid-template-columns:1fr}.ops-row{align-items:flex-start;flex-direction:column}.ops-actions{justify-content:flex-start}.ops-table{font-size:.78rem}.ops-table th:nth-child(4),.ops-table td:nth-child(4){display:none}}'
+      '.ops-section{margin-top:24px}.ops-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}.ops-grid.two{grid-template-columns:repeat(2,minmax(0,1fr))}.ops-card{padding:18px}.ops-card h3{margin:4px 0 8px}.ops-eyebrow{color:#86c7ff;font-size:.73rem;font-weight:800;letter-spacing:.06em;text-transform:uppercase}.ops-kpi{padding:17px}.ops-kpi span{display:block;color:var(--muted);font-size:.78rem}.ops-kpi b{display:block;margin-top:7px;font-size:1.42rem}.ops-alert{padding:13px 14px;border:1px solid rgba(245,185,88,.35);border-radius:13px;background:rgba(245,185,88,.08);color:#f5d69b;line-height:1.45}.ops-list{display:grid;gap:10px}.ops-row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:13px;border:1px solid var(--line);border-radius:13px;background:#0d151f}.ops-row h3{margin:0 0 4px;font-size:.96rem}.ops-row p{margin:0;color:var(--muted);font-size:.82rem}.ops-actions{display:flex;flex-wrap:wrap;justify-content:flex-end;gap:7px}.ops-score{display:inline-grid;place-items:center;min-width:46px;height:31px;border-radius:999px;background:#163a62;color:#d9efff;font-size:.8rem;font-weight:800}.ops-score.good{background:rgba(47,203,137,.18);color:#a7f2cb}.ops-score.bad{background:rgba(240,99,114,.17);color:#ffc7cf}.ops-note{margin-top:11px;padding:11px 12px;border-left:3px solid #4db9ff;background:rgba(37,134,247,.08);color:#cce5fa;font-size:.84rem;line-height:1.45}.ops-toolbar{display:flex;flex-wrap:wrap;gap:9px;align-items:center;margin-top:14px}.ops-table{width:100%;border-collapse:collapse;font-size:.86rem}.ops-table th,.ops-table td{padding:11px 8px;border-bottom:1px solid var(--line);text-align:left}.ops-table th{color:var(--muted);font-weight:700}.ops-empty{padding:26px 10px;color:var(--muted);text-align:center}.ops-chip{display:inline-flex;align-items:center;min-height:26px;padding:0 9px;border:1px solid var(--line);border-radius:999px;color:#b8d3e9;font-size:.74rem}.ops-warn{color:#f5d69b}.ops-success{color:#a7f2cb}.ops-doc{white-space:pre-wrap;min-height:220px;padding:16px;border:1px solid var(--line);border-radius:14px;background:#0a111a;color:#dce8f5;line-height:1.55}.chat-stream{display:grid;gap:10px;max-height:520px;overflow:auto;padding:4px}.chat-message{padding:13px 14px;border:1px solid var(--line);border-radius:15px;background:#0d151f}.chat-message.important{border-color:rgba(245,185,88,.55);background:rgba(245,185,88,.07)}.chat-meta{display:flex;flex-wrap:wrap;gap:7px;align-items:center;margin-bottom:7px}.chat-text{white-space:pre-wrap;color:#e7f1fb;line-height:1.48}.chat-compose textarea{min-height:100px}@media(max-width:920px){.ops-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(max-width:620px){.ops-grid,.ops-grid.two{grid-template-columns:1fr}.ops-row{align-items:flex-start;flex-direction:column}.ops-actions{justify-content:flex-start}.ops-table{font-size:.78rem}.ops-table th:nth-child(4),.ops-table td:nth-child(4){display:none}}'
     ].join('');
     document.head.append(style);
 
@@ -144,6 +146,7 @@
       '<section id="integrations-view" class="view"><div class="hero"><div><h1>Mobile & Integrationen</h1><p class="subtitle">Zugänge sicher vorbereiten und den mobilen Arbeitsablauf organisieren.</p></div><button class="secondary" data-ops-go="home">Übersicht</button></div><div id="integrations-content"></div></section>',
       '<section id="vehicle-notes-view" class="view"><div class="hero"><div><h1>Fahrzeugnotizen</h1><p class="subtitle">Datierte Teamhinweise direkt an der jeweiligen Fahrzeugakte.</p></div><button class="secondary" data-ops-go="inventory">Bestand öffnen</button></div><div id="vehicle-notes-content"></div></section>'
       ,'<section id="team-notes-view" class="view"><div class="hero"><div><h1>Teamnotizen</h1><p class="subtitle">Ein gemeinsamer, dauerhaft gespeicherter Textverlauf für alles Wichtige.</p></div><button class="secondary" data-ops-go="home">Übersicht</button></div><div id="team-notes-content"></div></section>'
+      ,'<section id="chat-view" class="view"><div class="hero"><div><h1>Chat</h1><p class="subtitle">Gemeinsamer Verlauf für alle berechtigten Nutzer.</p></div><button class="secondary" data-ops-go="home">Übersicht</button></div><div id="chat-content"></div></section>'
     ].join(''));
   }
 
@@ -162,6 +165,7 @@
       ['Integrationen', 'Öffnen', 'integrations', 'mobile.de, AutoScout24 und DATEV vorbereiten'],
       ['Dokumente', ops.documents.length, 'documents', 'Vorlagen und Druckansichten'],
       ['Teamnotizen', ops.generalNotes.length, 'team-notes', 'Gemeinsamer datierter Textverlauf'],
+      ['Chat', ops.chatMessages.length, 'chat', 'Nachrichten, Fahrzeugbezug und Reaktionen'],
     ].map(item => '<button class="card ops-kpi" data-ops-go="' + item[2] + '"><span>' + esc(item[0]) + '</span><b>' + esc(item[1]) + '</b><small class="muted">' + esc(item[3]) + '</small></button>').join('');
   }
 
@@ -221,6 +225,15 @@
     const notes = read().generalNotes.slice().sort((left, right) => new Date(right.createdAt) - new Date(left.createdAt));
     const history = notes.length ? notes.map(entry => '<article class="ops-row"><div><h3>' + esc(entry.author || 'Gemeinsamer Zugriff') + '</h3><p>' + esc(api.formatDate(entry.createdAt)) + '</p><p class="ops-note">' + esc(entry.text) + '</p></div></article>').join('') : '<div class="ops-empty">Noch keine allgemeinen Teamnotizen.</div>';
     document.getElementById('team-notes-content').innerHTML = '<div class="ops-grid two"><article class="card form-card"><div class="section-heading"><div><h2>Neue allgemeine Notiz</h2><p class="muted">Für Absprachen, Erinnerungen und Informationen, die keinem einzelnen Fahrzeug zugeordnet sind.</p></div></div><label>Notiz<textarea id="team-note-text" placeholder="z. B. Montag: neue Fotos für alle Inserate prüfen."></textarea></label><div class="form-actions"><button class="primary" data-ops-action="add-team-note">Notiz speichern</button></div></article><article class="card ops-card"><span class="ops-eyebrow">Gemeinsamer Verlauf</span><h2>' + notes.length + ' Einträge</h2><p class="muted">Jeder Eintrag wird mit Datum und Verfasser im gemeinsamen Bestand abgelegt.</p></article></div><section class="section"><div class="section-heading"><div><h2>Textverlauf</h2></div></div><div class="ops-list">' + history + '</div></section>';
+  }
+
+  function renderChat() {
+    const ops = read();
+    const query = chatSearch.trim().toLowerCase();
+    const messages = ops.chatMessages.filter(message => !query || [message.text, message.author, message.category, message.vehicleName].join(' ').toLowerCase().includes(query)).sort((left, right) => new Date(left.createdAt) - new Date(right.createdAt));
+    const formatTime = date => new Intl.DateTimeFormat('de-DE', { dateStyle: 'short', timeStyle: 'short' }).format(new Date(date));
+    const stream = messages.length ? messages.map(message => '<article class="chat-message' + (message.important ? ' important' : '') + '"><div class="chat-meta"><b>' + esc(message.author || 'Gemeinsamer Zugriff') + '</b><span class="ops-chip">' + esc(message.category || 'Allgemein') + '</span>' + (message.vehicleName ? '<span class="ops-chip">🚗 ' + esc(message.vehicleName) + '</span>' : '') + (message.important ? '<span class="ops-chip">★ Wichtig</span>' : '') + '<span class="muted">' + esc(formatTime(message.createdAt)) + '</span></div><div class="chat-text">' + esc(message.text) + '</div><div class="ops-toolbar"><button class="secondary" data-ops-action="react-chat" data-id="' + esc(message.id) + '">👍 ' + number(message.likes) + '</button><button class="secondary" data-ops-action="toggle-chat-important" data-id="' + esc(message.id) + '">' + (message.important ? 'Wichtig lösen' : 'Als wichtig markieren') + '</button></div></article>').join('') : '<div class="ops-empty">' + (query ? 'Keine Nachricht passt zur Suche.' : 'Noch keine Nachrichten. Schreibe die erste Nachricht.') + '</div>';
+    document.getElementById('chat-content').innerHTML = '<div class="ops-grid two"><article class="card form-card chat-compose"><div class="section-heading"><div><h2>Nachricht schreiben</h2><p class="muted">Alle berechtigten Nutzer sehen den gemeinsamen Verlauf.</p></div></div><div class="form-grid"><label>Bereich<select id="chat-category"><option>Allgemein</option><option>Ankauf</option><option>Verkauf</option><option>Aufbereitung</option><option>Buchhaltung</option><option>Termin</option></select></label><label>Fahrzeugbezug<select id="chat-vehicle">' + vehiclesOptions() + '</select></label></div><label style="margin-top:13px">Nachricht<textarea id="chat-text" placeholder="Nachricht an das Team …"></textarea></label><label class="check-label" style="margin-top:10px"><input id="chat-important" type="checkbox" /> Als wichtig markieren</label><div class="form-actions"><button class="primary" data-ops-action="send-chat">Senden</button></div><p class="muted">Tipp: Strg + Enter sendet die Nachricht.</p></article><article class="card ops-card"><span class="ops-eyebrow">Chat-Funktionen</span><h2>' + ops.chatMessages.length + ' Nachrichten</h2><p class="muted">Suche im Verlauf, ordne Nachrichten einem Bereich oder Fahrzeug zu, markiere Wichtiges und reagiere mit einem Daumen.</p><label style="margin-top:14px">Verlauf durchsuchen<input id="chat-search" type="search" value="' + esc(chatSearch) + '" placeholder="Text, Verfasser, Bereich oder Fahrzeug" /></label></article></div><section class="section"><div class="section-heading"><div><h2>Chatverlauf</h2><p class="muted">Älteste Nachrichten oben, neue Nachrichten unten.</p></div></div><div class="chat-stream">' + stream + '</div></section>';
   }
 
   function renderAccounting() {
@@ -283,6 +296,7 @@
     if (view === 'integrations') renderIntegrations();
     if (view === 'vehicle-notes') renderVehicleNotes(selectedNoteVehicleId);
     if (view === 'team-notes') renderTeamNotes();
+    if (view === 'chat') renderChat();
   }
 
   function value(selector) {
@@ -417,6 +431,18 @@
       api.notify('Allgemeine Teamnotiz wurde gespeichert.');
       return renderTeamNotes();
     }
+    if (action === 'send-chat') {
+      const text = value('#chat-text');
+      if (!text) return api.notify('Bitte eine Nachricht eingeben.');
+      const vehicle = byId(api.vehicles(), value('#chat-vehicle'));
+      mutate(ops => { ops.chatMessages.push({ id: id('chat'), text, author: api.userName ? api.userName() : 'Gemeinsamer Zugriff', category: value('#chat-category') || 'Allgemein', vehicleId: vehicle?.id || '', vehicleName: vehicle ? vehicleName(vehicle) : '', important: Boolean(document.querySelector('#chat-important')?.checked), likes: 0, createdAt: now() }); });
+      api.notify('Nachricht wurde im gemeinsamen Chat gespeichert.');
+      return renderChat();
+    }
+    if (action === 'react-chat' || action === 'toggle-chat-important') {
+      mutate(ops => { const message = byId(ops.chatMessages, button.dataset.id); if (!message) return; if (action === 'react-chat') message.likes = number(message.likes) + 1; else message.important = !message.important; });
+      return renderChat();
+    }
     if (action === 'book-cash') {
       const vehicle = byId(api.vehicles(), value('#cash-vehicle'));
       const file = document.querySelector('#receipt-file')?.files?.[0];
@@ -520,6 +546,19 @@
       if (action) { event.preventDefault(); handleAction(action.dataset.opsAction, action); }
     });
     document.addEventListener('change', onFileChange);
+    document.addEventListener('input', event => {
+      if (event.target.id !== 'chat-search') return;
+      chatSearch = event.target.value;
+      renderChat();
+      const search = document.getElementById('chat-search');
+      if (search) { search.focus(); search.setSelectionRange(chatSearch.length, chatSearch.length); }
+    });
+    document.addEventListener('keydown', event => {
+      if (event.target.id === 'chat-text' && event.ctrlKey && event.key === 'Enter') {
+        event.preventDefault();
+        handleAction('send-chat', event.target);
+      }
+    });
     document.addEventListener('carsautohaus:operations-updated', () => {
       const active = document.querySelector('.view.active')?.id?.replace('-view', '');
       render(active);
