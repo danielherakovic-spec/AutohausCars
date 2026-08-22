@@ -84,6 +84,16 @@ Für einen sofortigen vollständigen Entzug lösche unter **Authentication → U
 
 ## Enthaltene Dateien
 
+## Erweiterung: Ankauf, Zustand und Teamarbeit
+
+- **Gesamtranking in „Ankauf & Marktprüfung“:** Ordnet vorhandene Fahrzeugakten und offene Ankaufkandidaten anhand der gespeicherten Preis- und Margenannahmen, Laufleistung, Ausstattung, Mängel und Zustandsrisiken. Es ist eine erklärbare Priorisierung, keine automatische Kaufentscheidung oder externe Marktwertermittlung.
+- **Erweitertes Fahrzeugformular:** Enthält Inseratquelle und Inserat-Link (z. B. mobile.de oder AutoScout24), eine durchsuchbare Ausstattungsliste mit zusätzlichen Merkmalen sowie getrennte Zustandsfelder für Gesamtzustand, Karosserie, Innenraum, Technik, Reifen und Mängel.
+- **Notizen:** Unter „Bestand & Nachbereitung“ führt der Button **Notiz** zu einem datierten Teamverlauf je Fahrzeug. Zusätzlich gibt es in der Betriebszentrale **Teamnotizen** als unabhängigen, dauerhaft gespeicherten Textverlauf für allgemeine Absprachen und Erinnerungen.
+
+Für Ankaufentscheidungen bleiben Besichtigung, Probefahrt, Unterlagen-, Historien- und technische Prüfung unverzichtbar. Die Rangfolge verwendet nur die Daten, die in CarsAutoHaus erfasst wurden.
+
+- `index.html`, `app.js`, `config.js`: statische Browser-App ohne Edge-Function-Aufrufe.
+
 - `index.html`, `app.js`, `config.js`: statische Browser-App ohne Edge-Function-Aufrufe.
 - `supabase/password-rpc-migration.sql`: kurze Reparaturmigration für das bereits umgestellte Projekt.
 - `supabase/schema.sql`: vollständiges Schema für ein neues Projekt, ebenfalls mit RPC statt Edge Function.

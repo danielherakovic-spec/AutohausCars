@@ -2,6 +2,7 @@
   'use strict';
 
   let api;
+  let selectedNoteVehicleId = '';
   const now = () => new Date().toISOString();
   const number = value => Number(value || 0);
   const money = value => new Intl.NumberFormat('de-DE', { style: 'currency', currency: 'EUR' }).format(number(value));
@@ -22,6 +23,7 @@
       invoices: [],
       showrooms: [],
       documents: [],
+      generalNotes: [],
       receiptDraft: null,
       mobile: { pairingCode: '', generatedAt: '' },
     };
@@ -72,6 +74,25 @@
     return { score, reference, repairReserve, safeTarget, maximumPurchase, defects, recommendation, createdAt: now() };
   }
 
+  function defectsFrom(vehicle) {
+    return String(vehicle.defects || vehicle.notes || '').split(/\n|,|;/).map(value => value.trim()).filter(Boolean);
+  }
+
+  function vehicleAnalysis(vehicle) {
+    const buy = number(vehicle.purchasePrice) || number(vehicle.askingPrice);
+    const target = number(vehicle.desiredSalePrice) || number(vehicle.askingPrice);
+    const costs = ['transportCost', 'registrationCost', 'repairCost', 'cleaningCost', 'listingCost', 'otherCost', 'taxes'].reduce((sum, key) => sum + number(vehicle[key]), 0);
+    const expectedProfit = target - buy - costs;
+    const defects = defectsFrom(vehicle);
+    const conditionPenalty = { 'Sehr gut': 0, 'Gut': 3, 'Gebraucht': 7, 'Gebrauchsspuren': 7, 'Prüfung empfohlen': 9, 'Reparatur einplanen': 15, 'Reparaturbedürftig': 18, 'Schäden vorhanden': 18, 'Nicht fahrbereit': 28, 'Aufbereitung nötig': 8, 'Bald erneuern': 5, 'Erneuern': 10 };
+    const conditionRisk = [vehicle.conditionOverall, vehicle.bodyCondition, vehicle.interiorCondition, vehicle.technicalCondition, vehicle.tiresCondition].reduce((sum, value) => sum + (conditionPenalty[value] || 0), 0);
+    const equipmentBonus = Math.min(12, (vehicle.equipment || []).length * 0.75);
+    const mileagePenalty = number(vehicle.mileage) > 180000 ? 13 : number(vehicle.mileage) > 130000 ? 7 : number(vehicle.mileage) > 90000 ? 3 : 0;
+    const profitPoints = target && buy ? Math.max(-18, Math.min(28, expectedProfit / Math.max(target, 1) * 100)) : 0;
+    const score = Math.max(0, Math.min(100, Math.round(58 + profitPoints + equipmentBonus - defects.length * 6 - conditionRisk - mileagePenalty)));
+    return { score, expectedProfit, defects, conditionRisk, recommendation: score >= 72 ? 'Hohe interne Priorität – technische Prüfung und Unterlagencheck bleiben erforderlich.' : score >= 48 ? 'Mittlere Priorität – Preis, Mängel und Unterlagen vor Entscheidung nachschärfen.' : 'Niedrige Priorität – Risiken und erwartete Marge sprechen aktuell dagegen.' };
+  }
+
   function parseListing(text) {
     const raw = String(text || '');
     const pick = labels => {
@@ -120,7 +141,9 @@
       '<section id="accounting-view" class="view"><div class="hero"><div><h1>Buchhaltung</h1><p class="subtitle">Rechnungen, Kassenbuch, Belege und DATEV-Vorbereitung.</p></div><button class="secondary" data-ops-go="documents">Dokumente</button></div><div id="accounting-content"></div></section>',
       '<section id="showrooms-view" class="view"><div class="hero"><div><h1>Showrooms</h1><p class="subtitle">Standorte, Kapazitäten und Fahrzeugzuordnung verwalten.</p></div><button class="secondary" data-ops-go="inventory">Bestand öffnen</button></div><div id="showrooms-content"></div></section>',
       '<section id="documents-view" class="view"><div class="hero"><div><h1>Dokumente & Vorlagen</h1><p class="subtitle">Bearbeitbare Entwürfe für die tägliche Fahrzeugabwicklung.</p></div><button class="secondary" data-ops-go="accounting">Buchhaltung öffnen</button></div><div id="documents-content"></div></section>',
-      '<section id="integrations-view" class="view"><div class="hero"><div><h1>Mobile & Integrationen</h1><p class="subtitle">Zugänge sicher vorbereiten und den mobilen Arbeitsablauf organisieren.</p></div><button class="secondary" data-ops-go="home">Übersicht</button></div><div id="integrations-content"></div></section>'
+      '<section id="integrations-view" class="view"><div class="hero"><div><h1>Mobile & Integrationen</h1><p class="subtitle">Zugänge sicher vorbereiten und den mobilen Arbeitsablauf organisieren.</p></div><button class="secondary" data-ops-go="home">Übersicht</button></div><div id="integrations-content"></div></section>',
+      '<section id="vehicle-notes-view" class="view"><div class="hero"><div><h1>Fahrzeugnotizen</h1><p class="subtitle">Datierte Teamhinweise direkt an der jeweiligen Fahrzeugakte.</p></div><button class="secondary" data-ops-go="inventory">Bestand öffnen</button></div><div id="vehicle-notes-content"></div></section>'
+      ,'<section id="team-notes-view" class="view"><div class="hero"><div><h1>Teamnotizen</h1><p class="subtitle">Ein gemeinsamer, dauerhaft gespeicherter Textverlauf für alles Wichtige.</p></div><button class="secondary" data-ops-go="home">Übersicht</button></div><div id="team-notes-content"></div></section>'
     ].join(''));
   }
 
@@ -138,7 +161,16 @@
       ['Showrooms', showrooms, 'showrooms', vehicles.length + ' Fahrzeuge im Bestand'],
       ['Integrationen', 'Öffnen', 'integrations', 'mobile.de, AutoScout24 und DATEV vorbereiten'],
       ['Dokumente', ops.documents.length, 'documents', 'Vorlagen und Druckansichten'],
+      ['Teamnotizen', ops.generalNotes.length, 'team-notes', 'Gemeinsamer datierter Textverlauf'],
     ].map(item => '<button class="card ops-kpi" data-ops-go="' + item[2] + '"><span>' + esc(item[0]) + '</span><b>' + esc(item[1]) + '</b><small class="muted">' + esc(item[3]) + '</small></button>').join('');
+  }
+
+  function rankingRows() {
+    const vehicles = api.vehicles().map(vehicle => ({ type: 'Bestand', vehicle, analysis: vehicleAnalysis(vehicle), name: vehicleName(vehicle) }));
+    const candidates = read().candidates.filter(candidate => !['Abgelehnt', 'Übernommen'].includes(candidate.status)).map(candidate => ({ type: 'Ankauf', vehicle: candidate, analysis: candidate.analysis || analyze(candidate), name: vehicleName(candidate) }));
+    const ranked = vehicles.concat(candidates).sort((left, right) => right.analysis.score - left.analysis.score);
+    if (!ranked.length) return '<div class="ops-empty">Noch keine Fahrzeugakten oder Ankaufkandidaten für eine Rangfolge vorhanden.</div>';
+    return ranked.map((item, index) => '<article class="ops-row"><div><h3>#' + (index + 1) + ' · ' + esc(item.name) + ' <span class="ops-score ' + (item.analysis.score >= 72 ? 'good' : item.analysis.score < 48 ? 'bad' : '') + '">' + item.analysis.score + '/100</span></h3><p>' + esc(item.type) + ' · ' + number(item.vehicle.year).toLocaleString('de-DE') + ' · ' + number(item.vehicle.mileage).toLocaleString('de-DE') + ' km · ' + (item.type === 'Ankauf' ? money(item.vehicle.price) : 'erw. Ergebnis ' + money(item.analysis.expectedProfit)) + '</p><p class="ops-note">' + esc(item.analysis.recommendation) + (item.analysis.defects?.length ? '<br>Mängel/Hinweise: ' + esc(item.analysis.defects.join(' · ')) : '') + '</p></div><div class="ops-actions"><span class="ops-chip">' + (index === 0 ? 'Beste aktuelle Option' : index === ranked.length - 1 ? 'Niedrigste aktuelle Priorität' : 'Priorität ' + (index + 1)) + '</span>' + (item.type === 'Bestand' ? '<button class="secondary" data-go="autos">Fahrzeug öffnen</button>' : '<button class="secondary" data-ops-go="procurement">Ankauf prüfen</button>') + '</div></article>').join('');
   }
 
   function renderProcurement() {
@@ -150,7 +182,7 @@
       return '<article class="ops-row"><div><h3>' + esc(candidate.brand + ' ' + candidate.model) + ' <span class="ops-score ' + scoreClass + '">' + analysis.score + '/100</span></h3><p>' + esc(candidate.source) + ' · ' + esc(candidate.year || '–') + ' · ' + number(candidate.mileage).toLocaleString('de-DE') + ' km · ' + money(candidate.price) + '</p><p class="ops-note">' + esc(analysis.recommendation) + '<br>Interne Referenz: ' + (analysis.reference ? money(analysis.reference) : 'noch keine Vergleichsdaten') + ' · Einkaufslimit: ' + money(analysis.maximumPurchase) + ' · Mängelreserve: ' + money(analysis.repairReserve) + '</p></div><div class="ops-actions"><span class="ops-chip">' + esc(candidate.status) + '</span><button class="secondary" data-ops-action="observe" data-id="' + esc(candidate.id) + '">Beobachten</button><button class="secondary" data-ops-action="reject-candidate" data-id="' + esc(candidate.id) + '">Ablehnen</button><button class="primary" data-ops-action="accept-candidate" data-id="' + esc(candidate.id) + '">In Bestand übernehmen</button></div></article>';
     }).join('') : '<div class="ops-empty">Noch keine Ankaufkandidaten. Erstelle einen Kandidaten oder importiere ein Inserat zur Prüfung.</div>';
     document.getElementById('procurement-content').innerHTML = [
-      '<div class="ops-grid two"><article class="card form-card"><div class="section-heading"><div><h2>Neuen Ankauf prüfen</h2><p class="muted">Die Analyse ist nachvollziehbar und dient als Vorentscheidung – sie ersetzt keine Probefahrt, Gutachten oder Marktprüfung.</p></div></div><div class="form-grid"><label>Quelle<select id="proc-source"><option>mobile.de</option><option>AutoScout24</option><option>Händlernetz</option><option>Manuell</option></select></label><label>Inserat-Link oder Referenz<input id="proc-url" placeholder="https://…" /></label><label>Marke<input id="proc-brand" placeholder="z. B. Ford" /></label><label>Modell<input id="proc-model" placeholder="z. B. Fiesta" /></label><label>Baujahr<input id="proc-year" type="number" placeholder="2018" /></label><label>Kilometer<input id="proc-mileage" type="number" placeholder="90000" /></label><label>Aufgerufener Preis (€)<input id="proc-price" type="number" placeholder="9500" /></label></div><label style="margin-top:13px">Mängel, Hinweise und offene Fragen<textarea id="proc-defects" placeholder="z. B. HU prüfen, Kratzer Stoßfänger, Serviceheft fehlt"></textarea></label><div class="form-actions"><button class="primary" data-ops-action="analyze-candidate">Analyse erstellen</button></div></article><article class="card ops-card"><span class="ops-eyebrow">Ankauflogik</span><h2>Erklärbare Entscheidungshilfe</h2><div class="ops-list"><p class="muted">Vergleicht den aufgerufenen Preis mit ähnlichen Fahrzeugen im eigenen Bestand, berechnet eine konservative Mängelreserve und zeigt ein Einkaufslimit.</p><p class="ops-note">Für externe Marktpreise, Historie, Schäden und Dokumente bleibt eine manuelle fachliche Prüfung erforderlich.</p><button class="secondary" data-ops-go="imports">Inserat aus Import-Hub prüfen</button></div></article></div><section class="section"><div class="section-heading"><div><h2>Kandidaten & Beobachtung</h2><p class="muted">Übernimm nur Kandidaten, die du bewusst geprüft hast.</p></div></div><div class="ops-list">' + rows + '</div></section>'
+      '<div class="ops-grid two"><article class="card form-card"><div class="section-heading"><div><h2>Neuen Ankauf prüfen</h2><p class="muted">Die Analyse ist nachvollziehbar und dient als Vorentscheidung – sie ersetzt keine Probefahrt, Gutachten oder Marktprüfung.</p></div></div><div class="form-grid"><label>Quelle<select id="proc-source"><option>mobile.de</option><option>AutoScout24</option><option>Händlernetz</option><option>Manuell</option></select></label><label>Inserat-Link oder Referenz<input id="proc-url" placeholder="https://…" /></label><label>Marke<input id="proc-brand" placeholder="z. B. Ford" /></label><label>Modell<input id="proc-model" placeholder="z. B. Fiesta" /></label><label>Baujahr<input id="proc-year" type="number" placeholder="2018" /></label><label>Kilometer<input id="proc-mileage" type="number" placeholder="90000" /></label><label>Aufgerufener Preis (€)<input id="proc-price" type="number" placeholder="9500" /></label></div><label style="margin-top:13px">Mängel, Hinweise und offene Fragen<textarea id="proc-defects" placeholder="z. B. HU prüfen, Kratzer Stoßfänger, Serviceheft fehlt"></textarea></label><div class="form-actions"><button class="primary" data-ops-action="analyze-candidate">Analyse erstellen</button></div></article><article class="card ops-card"><span class="ops-eyebrow">Ankauflogik</span><h2>Erklärbare Entscheidungshilfe</h2><div class="ops-list"><p class="muted">Die Rangfolge berücksichtigt Preis- und Margenannahmen, Laufleistung, Ausstattung sowie erfasste Mängel und Zustandsrisiken.</p><p class="ops-note">Für externe Marktpreise, Historie, Schäden und Dokumente bleibt eine manuelle fachliche Prüfung erforderlich.</p><button class="secondary" data-ops-go="imports">Inserat aus Import-Hub prüfen</button></div></article></div><section class="section"><div class="section-heading"><div><h2>Gesamtranking: Ankauf & Bestand</h2><p class="muted">Die beste und die niedrigste aktuelle Priorität werden transparent aus den gespeicherten Daten berechnet, nicht automatisch entschieden.</p></div></div><div class="ops-list">' + rankingRows() + '</div></section><section class="section"><div class="section-heading"><div><h2>Kandidaten & Beobachtung</h2><p class="muted">Übernimm nur Kandidaten, die du bewusst geprüft hast.</p></div></div><div class="ops-list">' + rows + '</div></section>'
     ].join('');
   }
 
@@ -171,10 +203,24 @@
     const rows = vehicles.length ? vehicles.map(vehicle => {
       const showroom = byId(ops.showrooms, vehicle.showroomId);
       const next = vehicle.status === 'In Aufbereitung' ? 'Mängel und Kosten nachhalten' : vehicle.status === 'Besichtigung geplant' ? 'Unterlagen und Termin prüfen' : vehicle.status === 'Inseriert' ? 'Preis und Reaktion beobachten' : 'Fahrzeugakte prüfen';
-      return '<tr><td><b>' + esc(vehicleName(vehicle)) + '</b><br><span class="muted">' + esc(vehicle.status) + '</span></td><td>' + esc(showroom?.name || vehicle.location || 'Nicht zugeordnet') + '</td><td>' + esc(next) + '</td><td><button class="secondary" data-go="autos">Öffnen</button></td></tr>';
+      return '<tr><td><b>' + esc(vehicleName(vehicle)) + '</b><br><span class="muted">' + esc(vehicle.status) + '</span></td><td>' + esc(showroom?.name || vehicle.location || 'Nicht zugeordnet') + '</td><td>' + esc(next) + '</td><td><button class="secondary" data-ops-go="vehicle-notes" data-vehicle-id="' + esc(vehicle.id) + '">Notiz</button></td></tr>';
     }).join('') : '<tr><td colspan="4" class="ops-empty">Noch keine Fahrzeuge im Bestand.</td></tr>';
     const watched = candidates.length ? candidates.map(candidate => '<article class="ops-row"><div><h3>' + esc(candidate.brand + ' ' + candidate.model) + '</h3><p>' + money(candidate.price) + ' · ' + esc(candidate.analysis?.recommendation || 'Noch einmal prüfen') + '</p></div><div class="ops-actions"><button class="secondary" data-ops-go="procurement">Öffnen</button></div></article>').join('') : '<div class="ops-empty">Keine Kandidaten in Beobachtung.</div>';
     document.getElementById('inventory-content').innerHTML = '<div class="ops-grid two"><article class="card ops-card"><span class="ops-eyebrow">Bestand</span><h2>' + vehicles.length + ' aktive Fahrzeugakten</h2><p class="muted">Nutze die Fahrzeugdatenbank für Details, Preise und Fotos. Hier siehst du den nächsten operativen Schritt.</p></article><article class="card ops-card"><span class="ops-eyebrow">Beobachtung</span><h2>' + candidates.length + ' Ankaufkandidaten</h2><p class="muted">Beobachtungen bleiben getrennt vom Fahrzeugbestand, bis du sie bewusst übernimmst.</p></article></div><section class="section"><div class="section-heading"><div><h2>Nachbereitung im Bestand</h2><p class="muted">Fokussiere zuerst offene Fahrzeugakten und laufende Aufbereitung.</p></div></div><div class="card form-card"><table class="ops-table"><thead><tr><th>Fahrzeug</th><th>Standort</th><th>Nächster Schritt</th><th></th></tr></thead><tbody>' + rows + '</tbody></table></div></section><section class="section"><div class="section-heading"><div><h2>Beobachtungsliste</h2></div></div><div class="ops-list">' + watched + '</div></section>';
+  }
+
+  function renderVehicleNotes(selectedId) {
+    const vehicles = api.vehicles();
+    const selected = byId(vehicles, selectedId) || vehicles[0];
+    const entries = (selected?.noteHistory || []).slice().sort((left, right) => new Date(right.createdAt) - new Date(left.createdAt));
+    const history = entries.length ? entries.map(entry => '<article class="ops-row"><div><h3>' + esc(entry.author || 'Gemeinsamer Zugriff') + '</h3><p>' + esc(api.formatDate(entry.createdAt)) + '</p><p class="ops-note">' + esc(entry.text) + '</p></div></article>').join('') : '<div class="ops-empty">Noch keine Teamnotiz zu diesem Fahrzeug.</div>';
+    document.getElementById('vehicle-notes-content').innerHTML = '<div class="ops-grid two"><article class="card form-card"><div class="section-heading"><div><h2>Neue Teamnotiz</h2><p class="muted">Jeder Eintrag wird mit Datum und Verfasser in der Fahrzeugakte abgelegt.</p></div></div><div class="form-grid"><label>Fahrzeug<select id="vehicle-note-vehicle">' + vehiclesOptions(selected?.id) + '</select></label></div><label style="margin-top:13px">Notiz<textarea id="vehicle-note-text" placeholder="z. B. Am 22.08. Probefahrt vereinbart, Reifenprofil vor Ankauf messen."></textarea></label><div class="form-actions"><button class="primary" data-ops-action="add-vehicle-note">Notiz speichern</button></div></article><article class="card ops-card"><span class="ops-eyebrow">Gemeinsamer Verlauf</span><h2>' + esc(vehicleName(selected)) + '</h2><p class="muted">Die Notizen werden mit dem gemeinsamen Bestand synchronisiert und sind für berechtigte Geräte sichtbar.</p><button class="secondary" data-ops-go="inventory">Zurück zum Bestand</button></article></div><section class="section"><div class="section-heading"><div><h2>Notizverlauf</h2></div></div><div class="ops-list">' + history + '</div></section>';
+  }
+
+  function renderTeamNotes() {
+    const notes = read().generalNotes.slice().sort((left, right) => new Date(right.createdAt) - new Date(left.createdAt));
+    const history = notes.length ? notes.map(entry => '<article class="ops-row"><div><h3>' + esc(entry.author || 'Gemeinsamer Zugriff') + '</h3><p>' + esc(api.formatDate(entry.createdAt)) + '</p><p class="ops-note">' + esc(entry.text) + '</p></div></article>').join('') : '<div class="ops-empty">Noch keine allgemeinen Teamnotizen.</div>';
+    document.getElementById('team-notes-content').innerHTML = '<div class="ops-grid two"><article class="card form-card"><div class="section-heading"><div><h2>Neue allgemeine Notiz</h2><p class="muted">Für Absprachen, Erinnerungen und Informationen, die keinem einzelnen Fahrzeug zugeordnet sind.</p></div></div><label>Notiz<textarea id="team-note-text" placeholder="z. B. Montag: neue Fotos für alle Inserate prüfen."></textarea></label><div class="form-actions"><button class="primary" data-ops-action="add-team-note">Notiz speichern</button></div></article><article class="card ops-card"><span class="ops-eyebrow">Gemeinsamer Verlauf</span><h2>' + notes.length + ' Einträge</h2><p class="muted">Jeder Eintrag wird mit Datum und Verfasser im gemeinsamen Bestand abgelegt.</p></article></div><section class="section"><div class="section-heading"><div><h2>Textverlauf</h2></div></div><div class="ops-list">' + history + '</div></section>';
   }
 
   function renderAccounting() {
@@ -235,6 +281,8 @@
     if (view === 'showrooms') renderShowrooms();
     if (view === 'documents') renderDocuments();
     if (view === 'integrations') renderIntegrations();
+    if (view === 'vehicle-notes') renderVehicleNotes(selectedNoteVehicleId);
+    if (view === 'team-notes') renderTeamNotes();
   }
 
   function value(selector) {
@@ -347,6 +395,28 @@
       mutate(ops => { ops.mobile.pairingCode = Math.random().toString(36).slice(2, 8).toUpperCase(); ops.mobile.generatedAt = now(); });
       return renderIntegrations();
     }
+    if (action === 'add-vehicle-note') {
+      const vehicleId = value('#vehicle-note-vehicle');
+      const text = value('#vehicle-note-text');
+      if (!vehicleId || !text) return api.notify('Bitte Fahrzeug und Notiz angeben.');
+      selectedNoteVehicleId = vehicleId;
+      mutate((ops, state) => {
+        const vehicle = byId(state.vehicles, vehicleId);
+        if (!vehicle) return;
+        vehicle.noteHistory = Array.isArray(vehicle.noteHistory) ? vehicle.noteHistory : [];
+        vehicle.noteHistory.push({ id: id('note'), text, author: state.name || 'Gemeinsamer Zugriff', createdAt: now() });
+        vehicle.updatedAt = now();
+      });
+      api.notify('Teamnotiz wurde datiert in der Fahrzeugakte gespeichert.');
+      return renderVehicleNotes(selectedNoteVehicleId);
+    }
+    if (action === 'add-team-note') {
+      const text = value('#team-note-text');
+      if (!text) return api.notify('Bitte eine Notiz eingeben.');
+      mutate(ops => { ops.generalNotes.push({ id: id('team-note'), text, author: api.getState().name || 'Gemeinsamer Zugriff', createdAt: now() }); });
+      api.notify('Allgemeine Teamnotiz wurde gespeichert.');
+      return renderTeamNotes();
+    }
     if (action === 'book-cash') {
       const vehicle = byId(api.vehicles(), value('#cash-vehicle'));
       const file = document.querySelector('#receipt-file')?.files?.[0];
@@ -445,7 +515,7 @@
   function bind() {
     document.addEventListener('click', event => {
       const nav = event.target.closest('[data-ops-go]');
-      if (nav) { event.preventDefault(); screen(nav.dataset.opsGo); return; }
+      if (nav) { event.preventDefault(); if (nav.dataset.opsGo === 'vehicle-notes') selectedNoteVehicleId = nav.dataset.vehicleId || selectedNoteVehicleId; screen(nav.dataset.opsGo); return; }
       const action = event.target.closest('[data-ops-action]');
       if (action) { event.preventDefault(); handleAction(action.dataset.opsAction, action); }
     });
