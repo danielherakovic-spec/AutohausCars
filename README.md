@@ -85,7 +85,7 @@ Für einen sofortigen vollständigen Entzug lösche unter **Authentication → U
 
 ## Erweiterung: Ankauf, Zustand und Teamarbeit
 
-- **Premium-Oberfläche:** Durchgehend dunkles Navy-/Anthrazit-Design ohne helle Flächen, mit gedämpften Kontrasten, systemnaher Typografie, großzügigen Abständen, Glasnavigation und konsistenten Formular-, Vergleichs-, Chat- und Mobilansichten. Alle bestehenden Funktionen und Datenwege bleiben erhalten.
+- **Premium-Oberfläche:** Einheitliche, verlaufsfreie Farbpalette aus Schwarz, tiefem Navy, dunklem Blau, Royalblau, Türkis, hellem Grau und sehr sparsamem Weiß. Dashboard, Formulare, Vergleich, Chat, Tabellen, Login sowie Desktop- und Mobilnavigation folgen ausschließlich diesen Farben. Alle bestehenden Funktionen und Datenwege bleiben erhalten.
 
 - **Gesamtranking in „Ankauf & Marktprüfung“:** Ordnet vorhandene Fahrzeugakten und offene Ankaufkandidaten anhand der gespeicherten Preis- und Margenannahmen, Laufleistung, Ausstattung, Mängel und Zustandsrisiken. Es ist eine erklärbare Priorisierung, keine automatische Kaufentscheidung oder externe Marktwertermittlung.
 - **Erweitertes Fahrzeugformular:** Enthält Inseratquelle und Inserat-Link (z. B. mobile.de oder AutoScout24), eine durchsuchbare Ausstattungsliste mit zusätzlichen Merkmalen sowie getrennte Zustandsfelder für Gesamtzustand, Karosserie, Innenraum, Technik, Reifen und Mängel.
@@ -104,7 +104,8 @@ Für Ankaufentscheidungen bleiben Besichtigung, Probefahrt, Unterlagen-, Histori
 ## Enthaltene Dateien
 
 - `index.html`, `app.js`, `config.js`: statische Browser-App ohne Edge-Function-Aufrufe.
-- `premium-ui.css`: das helle, responsive CarsAutoHaus-Designsystem.
+- `premium-ui.css`: das responsive CarsAutoHaus-Designsystem.
+- `palette-lock.css`: abschließende, verlaufsfreie Royalblau-/Türkis-Palette für jede sichtbare Oberfläche.
 - `comparison-pro.js`: Zwei-Fahrzeug-Vergleich mit interner Preis-, Aufbereitungs- und Ratingerklärung.
 - `free-dictation.js`, `listing-paste-import.js`: freie Spracheingabe und kopierbare Inseratübernahme.
 - `operations-suite.js`: Ankauf, Import, Bestand, Notizen, Chat, Buchhaltung, Showrooms, Dokumente und Integrationsvorbereitung.
