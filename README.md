@@ -85,7 +85,7 @@ Für einen sofortigen vollständigen Entzug lösche unter **Authentication → U
 
 ## Erweiterung: Ankauf, Zustand und Teamarbeit
 
-- **Premium-Oberfläche:** Helles, ruhiges Design mit systemnaher Typografie, großzügigen Abständen, Glasnavigation, klarer Kartenhierarchie sowie konsistenten Formular-, Chat- und Mobilansichten. Alle bestehenden Funktionen und Datenwege bleiben erhalten.
+- **Premium-Oberfläche:** Durchgehend dunkles Navy-/Anthrazit-Design ohne helle Flächen, mit gedämpften Kontrasten, systemnaher Typografie, großzügigen Abständen, Glasnavigation und konsistenten Formular-, Vergleichs-, Chat- und Mobilansichten. Alle bestehenden Funktionen und Datenwege bleiben erhalten.
 
 - **Gesamtranking in „Ankauf & Marktprüfung“:** Ordnet vorhandene Fahrzeugakten und offene Ankaufkandidaten anhand der gespeicherten Preis- und Margenannahmen, Laufleistung, Ausstattung, Mängel und Zustandsrisiken. Es ist eine erklärbare Priorisierung, keine automatische Kaufentscheidung oder externe Marktwertermittlung.
 - **Erweitertes Fahrzeugformular:** Enthält Inseratquelle und Inserat-Link (z. B. mobile.de oder AutoScout24), eine durchsuchbare Ausstattungsliste mit zusätzlichen Merkmalen sowie getrennte Zustandsfelder für Gesamtzustand, Karosserie, Innenraum, Technik, Reifen und Mängel.

@@ -1,4 +1,4 @@
-const CACHE = 'carsautohaus-betriebszentrale-v10-compare-pro';
+const CACHE = 'carsautohaus-betriebszentrale-v11-dark-navy';
 const ASSETS = ['./', './index.html', './premium-ui.css', './app.js', './voice-assistant.js', './free-dictation.js', './listing-paste-import.js', './operations-suite.js', './comparison-pro.js', './config.js', './manifest.webmanifest', './icon.svg'];
 self.addEventListener('install', event => event.waitUntil(caches.open(CACHE).then(cache => cache.addAll(ASSETS))));
 self.addEventListener('activate', event => event.waitUntil(
