@@ -33,6 +33,7 @@ Bereits vollständige Paare werden auch aus Zwischenergebnissen übernommen. Dam
 Die Erweiterung ergänzt CarsAutoHaus um einen zusammenhängenden operativen Arbeitsbereich. Alle neuen Daten werden innerhalb des bestehenden gemeinsamen Bestands gespeichert; an Supabase-Konfiguration, Passwort-RPC oder RLS wurde nichts geändert.
 
 - **Ankauf & Marktprüfung:** Ankaufkandidaten aus manuellen Angaben oder der Importwarteschlange mit interner Preisreferenz, Mängelreserve, konservativem Einkaufslimit und nachvollziehbarem Score prüfen. Die Analyse ist eine transparente Vorentscheidung und ersetzt keine technische Prüfung, Probefahrt, Dokumentenprüfung oder externe Marktanalyse.
+- **Vergleich Pro:** Zwei gespeicherte Fahrzeuge vollständig nebeneinander anzeigen. Die Ansicht vergleicht optimalen Ankauf und Verkauf, Mängel, geschätzte Aufbereitung, Nebenkosten, Ausstattung, Beschreibung und Notizen. Preisposition und Rating lassen sich aufklappen und zeigen jede verwendete Rechenkomponente. Ohne offizielle Marktdaten bleiben die Werte interne, nachvollziehbare Kalkulationshilfen.
 - **Import-Hub:** Inserate von mobile.de, AutoScout24, Händlerlisten oder manuellen Quellen zunächst als kontrollierbaren Vorschlag ablegen und erst danach einzeln in den Bestand übernehmen. Strukturierte JSON- und CSV-Dateien können vorbefüllt werden.
 - **Bestand & Beobachtung:** Operative Nachbereitung für aktive Fahrzeugakten, Aufbereitung, Besichtigung und beobachtete Ankaufkandidaten.
 - **Buchhaltung:** Kassenbuch mit Einnahmen/Ausgaben, Fahrzeugbezug, Notiz und Belegimport bis 500 KB je Eintrag; Rechnungsentwürfe und ein Kassenbuch-CSV-Export für die weitere Verarbeitung.
@@ -82,9 +83,9 @@ Zum Ändern wiederhole nur die Passwort-Query oben mit einem neuen Passwort. Neu
 
 Für einen sofortigen vollständigen Entzug lösche unter **Authentication → Users** die betreffenden anonymen Benutzer. Sie müssen sich danach mit dem neuen Passwort erneut anmelden. Lösche dabei keine Nutzer, wenn du den Zugriff dieses Geräts behalten möchtest.
 
-## Enthaltene Dateien
-
 ## Erweiterung: Ankauf, Zustand und Teamarbeit
+
+- **Premium-Oberfläche:** Helles, ruhiges Design mit systemnaher Typografie, großzügigen Abständen, Glasnavigation, klarer Kartenhierarchie sowie konsistenten Formular-, Chat- und Mobilansichten. Alle bestehenden Funktionen und Datenwege bleiben erhalten.
 
 - **Gesamtranking in „Ankauf & Marktprüfung“:** Ordnet vorhandene Fahrzeugakten und offene Ankaufkandidaten anhand der gespeicherten Preis- und Margenannahmen, Laufleistung, Ausstattung, Mängel und Zustandsrisiken. Es ist eine erklärbare Priorisierung, keine automatische Kaufentscheidung oder externe Marktwertermittlung.
 - **Erweitertes Fahrzeugformular:** Enthält Inseratquelle und Inserat-Link (z. B. mobile.de oder AutoScout24), eine durchsuchbare Ausstattungsliste mit zusätzlichen Merkmalen sowie getrennte Zustandsfelder für Gesamtzustand, Karosserie, Innenraum, Technik, Reifen und Mängel.
@@ -100,9 +101,14 @@ Ohne diese einmalige Migration bewahrt die App den Chat auf dem aktuellen Gerät
 
 Für Ankaufentscheidungen bleiben Besichtigung, Probefahrt, Unterlagen-, Historien- und technische Prüfung unverzichtbar. Die Rangfolge verwendet nur die Daten, die in CarsAutoHaus erfasst wurden.
 
-- `index.html`, `app.js`, `config.js`: statische Browser-App ohne Edge-Function-Aufrufe.
+## Enthaltene Dateien
 
 - `index.html`, `app.js`, `config.js`: statische Browser-App ohne Edge-Function-Aufrufe.
+- `premium-ui.css`: das helle, responsive CarsAutoHaus-Designsystem.
+- `comparison-pro.js`: Zwei-Fahrzeug-Vergleich mit interner Preis-, Aufbereitungs- und Ratingerklärung.
+- `free-dictation.js`, `listing-paste-import.js`: freie Spracheingabe und kopierbare Inseratübernahme.
+- `operations-suite.js`: Ankauf, Import, Bestand, Notizen, Chat, Buchhaltung, Showrooms, Dokumente und Integrationsvorbereitung.
+- `supabase/operations-state-rpc-migration.sql`: additive Migration für dauerhaft gemeinsame Betriebs-, Notiz- und Chatdaten.
 - `supabase/password-rpc-migration.sql`: kurze Reparaturmigration für das bereits umgestellte Projekt.
 - `supabase/schema.sql`: vollständiges Schema für ein neues Projekt, ebenfalls mit RPC statt Edge Function.
 

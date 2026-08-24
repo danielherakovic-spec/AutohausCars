@@ -4,8 +4,8 @@
   "description": "Fahrzeug-Einkauf, Vergleich und Gewinnbewertung",
   "start_url": "./",
   "display": "standalone",
-  "background_color": "#080c12",
-  "theme_color": "#0b111a",
+  "background_color": "#f5f5f7",
+  "theme_color": "#f5f5f7",
   "lang": "de",
   "icons": [
     { "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" },

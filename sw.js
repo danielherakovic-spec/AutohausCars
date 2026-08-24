@@ -1,5 +1,5 @@
-const CACHE = 'carsautohaus-betriebszentrale-v8';
-const ASSETS = ['./', './index.html', './app.js', './voice-assistant.js', './free-dictation.js', './listing-paste-import.js', './operations-suite.js', './config.js', './manifest.webmanifest', './icon.svg'];
+const CACHE = 'carsautohaus-betriebszentrale-v10-compare-pro';
+const ASSETS = ['./', './index.html', './premium-ui.css', './app.js', './voice-assistant.js', './free-dictation.js', './listing-paste-import.js', './operations-suite.js', './comparison-pro.js', './config.js', './manifest.webmanifest', './icon.svg'];
 self.addEventListener('install', event => event.waitUntil(caches.open(CACHE).then(cache => cache.addAll(ASSETS))));
 self.addEventListener('activate', event => event.waitUntil(
   caches.keys().then(keys => Promise.all(keys.filter(key => /^(?:autovalue-pro|carsautohaus)-/.test(key) && key !== CACHE).map(key => caches.delete(key)))).then(() => self.clients.claim())

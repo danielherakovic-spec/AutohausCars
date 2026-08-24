@@ -59,22 +59,37 @@
       String(vehicle.model || '').toLowerCase() === String(candidate.model || '').toLowerCase()
     );
     const referenceValues = comparable.map(vehicle => number(vehicle.askingPrice) || number(vehicle.desiredSalePrice) || number(vehicle.purchasePrice)).filter(Boolean);
-    const reference = referenceValues.length ? referenceValues.reduce((sum, value) => sum + value, 0) / referenceValues.length : 0;
+    const sortedReferences = referenceValues.slice().sort((a, b) => a - b);
+    const reference = sortedReferences.length ? sortedReferences[Math.floor(sortedReferences.length / 2)] : 0;
     const defects = String(candidate.defects || '').split(/\n|,|;/).map(value => value.trim()).filter(Boolean);
-    const repairReserve = defects.length * 600;
+    const repairReserve = defects.reduce((sum, defect) => {
+      const text = defect.toLowerCase();
+      if (/motor|steuerkette|zylinderkopf/.test(text)) return sum + 2500;
+      if (/getriebe|dsg|automatik/.test(text)) return sum + 1800;
+      if (/kupplung|zweimassen/.test(text)) return sum + 950;
+      if (/turbo/.test(text)) return sum + 1200;
+      if (/reifen/.test(text)) return sum + 520;
+      if (/bremse/.test(text)) return sum + 580;
+      if (/lack|kratzer|stoßfänger|stossfänger/.test(text)) return sum + 500;
+      if (/hu|tüv|service|inspektion/.test(text)) return sum + 350;
+      return sum + 300;
+    }, 0);
     const yearRisk = candidate.year && candidate.year < new Date().getFullYear() - 12 ? 500 : 0;
     const mileageRisk = candidate.mileage > 180000 ? 700 : candidate.mileage > 130000 ? 350 : 0;
-    const safeTarget = reference ? Math.max(0, Math.round(reference - repairReserve - yearRisk - mileageRisk)) : Math.round(number(candidate.price) * 1.12 - repairReserve);
-    const maximumPurchase = Math.max(0, Math.round(safeTarget * 0.78));
+    const optimalSale = Math.max(0, Math.round(reference || number(candidate.price) * 1.12));
+    const targetMargin = Math.max(1500, Math.round(optimalSale * .15));
+    const maximumPurchase = Math.max(0, Math.round(optimalSale - repairReserve - yearRisk - mileageRisk - 600 - targetMargin));
+    const safeTarget = optimalSale;
     let score = 52;
-    if (reference) score += Math.max(-24, Math.min(24, Math.round((reference - number(candidate.price)) / reference * 100)));
-    score -= defects.length * 7;
+    if (maximumPurchase) score += Math.max(-24, Math.min(24, Math.round((maximumPurchase - number(candidate.price)) / maximumPurchase * 100)));
+    score -= Math.min(24, repairReserve / Math.max(optimalSale, 1) * 100);
+    score += Math.min(8, (candidate.equipment || []).length * .5);
     if (candidate.mileage > 180000) score -= 9;
     else if (candidate.mileage > 130000) score -= 4;
     if (candidate.year && candidate.year < new Date().getFullYear() - 16) score -= 5;
     score = Math.max(0, Math.min(100, score));
     const recommendation = score >= 72 ? 'Interessant – technische Prüfung und Unterlagencheck einplanen.' : score >= 48 ? 'Nur mit Preisverhandlung und klarer Mängelkalkulation weiterverfolgen.' : 'Aktuell nicht priorisieren; Markt- und Reparaturrisiko überwiegen.';
-    return { score, reference, repairReserve, safeTarget, maximumPurchase, defects, recommendation, createdAt: now() };
+    return { score, reference, repairReserve, safeTarget, optimalSale, maximumPurchase, targetMargin, defects, recommendation, createdAt: now() };
   }
 
   function defectsFrom(vehicle) {
@@ -184,11 +199,17 @@
     const rows = candidates.length ? candidates.map(candidate => {
       const analysis = candidate.analysis || analyze(candidate);
       const scoreClass = analysis.score >= 72 ? 'good' : analysis.score < 48 ? 'bad' : '';
-      return '<article class="ops-row"><div><h3>' + esc(candidate.brand + ' ' + candidate.model) + ' <span class="ops-score ' + scoreClass + '">' + analysis.score + '/100</span></h3><p>' + esc(candidate.source) + ' · ' + esc(candidate.year || '–') + ' · ' + number(candidate.mileage).toLocaleString('de-DE') + ' km · ' + money(candidate.price) + '</p><p class="ops-note">' + esc(analysis.recommendation) + '<br>Interne Referenz: ' + (analysis.reference ? money(analysis.reference) : 'noch keine Vergleichsdaten') + ' · Einkaufslimit: ' + money(analysis.maximumPurchase) + ' · Mängelreserve: ' + money(analysis.repairReserve) + '</p></div><div class="ops-actions"><span class="ops-chip">' + esc(candidate.status) + '</span><button class="secondary" data-ops-action="observe" data-id="' + esc(candidate.id) + '">Beobachten</button><button class="secondary" data-ops-action="reject-candidate" data-id="' + esc(candidate.id) + '">Ablehnen</button><button class="primary" data-ops-action="accept-candidate" data-id="' + esc(candidate.id) + '">In Bestand übernehmen</button></div></article>';
+      return '<article class="ops-row"><div><h3>' + esc(candidate.brand + ' ' + candidate.model) + ' <span class="ops-score ' + scoreClass + '">' + analysis.score + '/100</span></h3><p>' + esc(candidate.source) + ' · ' + esc(candidate.year || '–') + ' · ' + number(candidate.mileage).toLocaleString('de-DE') + ' km · Angebot ' + money(candidate.price) + '</p><p class="ops-note">' + esc(analysis.recommendation) + '<br>Optimaler Ankauf: ' + money(analysis.maximumPurchase) + ' · Optimaler Verkauf: ' + money(analysis.optimalSale || analysis.safeTarget) + ' · Aufbereitung: ' + money(analysis.repairReserve) + '</p></div><div class="ops-actions"><span class="ops-chip">' + esc(candidate.status) + '</span><button class="secondary" data-ops-action="observe" data-id="' + esc(candidate.id) + '">Beobachten</button><button class="secondary" data-ops-action="reject-candidate" data-id="' + esc(candidate.id) + '">Ablehnen</button><button class="primary" data-ops-action="accept-candidate" data-id="' + esc(candidate.id) + '">In Bestand übernehmen</button></div></article>';
     }).join('') : '<div class="ops-empty">Noch keine Ankaufkandidaten. Erstelle einen Kandidaten oder importiere ein Inserat zur Prüfung.</div>';
     document.getElementById('procurement-content').innerHTML = [
       '<div class="ops-grid two"><article class="card form-card"><div class="section-heading"><div><h2>Neuen Ankauf prüfen</h2><p class="muted">Die Analyse ist nachvollziehbar und dient als Vorentscheidung – sie ersetzt keine Probefahrt, Gutachten oder Marktprüfung.</p></div></div><div class="form-grid"><label>Quelle<select id="proc-source"><option>mobile.de</option><option>AutoScout24</option><option>Händlernetz</option><option>Manuell</option></select></label><label>Inserat-Link oder Referenz<input id="proc-url" placeholder="https://…" /></label><label>Marke<input id="proc-brand" placeholder="z. B. Ford" /></label><label>Modell<input id="proc-model" placeholder="z. B. Fiesta" /></label><label>Baujahr<input id="proc-year" type="number" placeholder="2018" /></label><label>Kilometer<input id="proc-mileage" type="number" placeholder="90000" /></label><label>Aufgerufener Preis (€)<input id="proc-price" type="number" placeholder="9500" /></label></div><label style="margin-top:13px">Mängel, Hinweise und offene Fragen<textarea id="proc-defects" placeholder="z. B. HU prüfen, Kratzer Stoßfänger, Serviceheft fehlt"></textarea></label><div class="form-actions"><button class="primary" data-ops-action="analyze-candidate">Analyse erstellen</button></div></article><article class="card ops-card"><span class="ops-eyebrow">Ankauflogik</span><h2>Erklärbare Entscheidungshilfe</h2><div class="ops-list"><p class="muted">Die Rangfolge berücksichtigt Preis- und Margenannahmen, Laufleistung, Ausstattung sowie erfasste Mängel und Zustandsrisiken.</p><p class="ops-note">Für externe Marktpreise, Historie, Schäden und Dokumente bleibt eine manuelle fachliche Prüfung erforderlich.</p><button class="secondary" data-ops-go="imports">Inserat aus Import-Hub prüfen</button></div></article></div><section class="section"><div class="section-heading"><div><h2>Gesamtranking: Ankauf & Bestand</h2><p class="muted">Die beste und die niedrigste aktuelle Priorität werden transparent aus den gespeicherten Daten berechnet, nicht automatisch entschieden.</p></div></div><div class="ops-list">' + rankingRows() + '</div></section><section class="section"><div class="section-heading"><div><h2>Kandidaten & Beobachtung</h2><p class="muted">Übernimm nur Kandidaten, die du bewusst geprüft hast.</p></div></div><div class="ops-list">' + rows + '</div></section>'
     ].join('');
+    const procurementGrid = document.getElementById('proc-price')?.closest('.form-grid');
+    if (procurementGrid && !document.getElementById('proc-equipment')) procurementGrid.insertAdjacentHTML('beforeend', '<label>Ausstattung, kommagetrennt<input id="proc-equipment" placeholder="Klima, Navi, Sitzheizung" /></label>');
+    const defectField = document.getElementById('proc-defects')?.closest('label');
+    if (defectField && !document.getElementById('proc-description')) defectField.insertAdjacentHTML('beforebegin', '<label style="margin-top:13px">Fahrzeugbeschreibung<textarea id="proc-description" placeholder="Inseratbeschreibung, Historie und Besonderheiten"></textarea></label>');
+    const logicActions = document.querySelector('#procurement-content [data-ops-go="imports"]')?.parentElement;
+    if (logicActions && !logicActions.querySelector('[data-compare-go]')) logicActions.insertAdjacentHTML('afterbegin', '<button class="secondary" data-compare-go="compare-pro">Vergleich Pro öffnen</button>');
   }
 
   function renderImports() {
@@ -322,7 +343,7 @@
       id: id('car'), brand: item.brand || 'Unbekannt', model: item.model || '', year: number(item.year),
       mileage: number(item.mileage), askingPrice: number(item.price), purchasePrice: 0, desiredSalePrice: 0,
       status: 'Besichtigung geplant', sourceUrl: item.url || '', importedAt: now(), notes: 'Aus ' + item.source + ' zur Prüfung übernommen.',
-      equipment: [], updatedAt: now(), createdBy: 'Import-Hub'
+      description: item.description || '', defects: item.defects || '', equipment: item.equipment || [], updatedAt: now(), createdBy: 'Import-Hub'
     };
   }
 
@@ -364,7 +385,8 @@
       const candidate = {
         id: id('candidate'), source: value('#proc-source') || 'Manuell', url: value('#proc-url'), brand: value('#proc-brand'),
         model: value('#proc-model'), year: number(value('#proc-year')), mileage: number(value('#proc-mileage')),
-        price: number(value('#proc-price')), defects: value('#proc-defects'), status: 'Neu', createdAt: now()
+        price: number(value('#proc-price')), defects: value('#proc-defects'), description: value('#proc-description'),
+        equipment: value('#proc-equipment').split(',').map(item => item.trim()).filter(Boolean), status: 'Neu', createdAt: now()
       };
       if (!candidate.brand || !candidate.model || !candidate.price) return api.notify('Bitte mindestens Marke, Modell und Preis angeben.');
       candidate.analysis = analyze(candidate);
