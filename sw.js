@@ -1,6 +1,6 @@
-const CACHE = 'carsautohaus-betriebszentrale-v13-home-pins';
-const ASSETS = ['./', './index.html', './premium-ui.css', './palette-lock.css', './app.js', './voice-assistant.js', './free-dictation.js', './listing-paste-import.js', './operations-suite.js', './comparison-pro.js', './config.js', './manifest.webmanifest', './icon.svg'];
-self.addEventListener('install', event => event.waitUntil(caches.open(CACHE).then(cache => cache.addAll(ASSETS))));
+const CACHE = 'carsautohaus-betriebszentrale-v14-critical-ui-fix';
+const ASSETS = ['./', './index.html', './premium-ui.css?v=14', './palette-lock.css?v=14', './app.js?v=14', './voice-assistant.js', './free-dictation.js', './listing-paste-import.js', './operations-suite.js?v=14', './comparison-pro.js?v=14', './config.js', './manifest.webmanifest', './icon.svg'];
+self.addEventListener('install', event => event.waitUntil(caches.open(CACHE).then(cache => cache.addAll(ASSETS)).then(() => self.skipWaiting())));
 self.addEventListener('activate', event => event.waitUntil(
   caches.keys().then(keys => Promise.all(keys.filter(key => /^(?:autovalue-pro|carsautohaus)-/.test(key) && key !== CACHE).map(key => caches.delete(key)))).then(() => self.clients.claim())
 ));
