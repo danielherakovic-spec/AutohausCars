@@ -1,4 +1,4 @@
-const CACHE = 'carsautohaus-betriebszentrale-v12-palette-lock';
+const CACHE = 'carsautohaus-betriebszentrale-v13-home-pins';
 const ASSETS = ['./', './index.html', './premium-ui.css', './palette-lock.css', './app.js', './voice-assistant.js', './free-dictation.js', './listing-paste-import.js', './operations-suite.js', './comparison-pro.js', './config.js', './manifest.webmanifest', './icon.svg'];
 self.addEventListener('install', event => event.waitUntil(caches.open(CACHE).then(cache => cache.addAll(ASSETS))));
 self.addEventListener('activate', event => event.waitUntil(

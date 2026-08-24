@@ -4,6 +4,8 @@
   let api;
   let selectedNoteVehicleId = '';
   let chatSearch = '';
+  let selectedChatMessageId = '';
+  let draggedHomePinId = '';
   const now = () => new Date().toISOString();
   const number = value => Number(value || 0);
   const money = value => new Intl.NumberFormat('de-DE', { style: 'currency', currency: 'EUR' }).format(number(value));
@@ -26,6 +28,7 @@
       documents: [],
       generalNotes: [],
       chatMessages: [],
+      homePins: [],
       receiptDraft: null,
       mobile: { pairingCode: '', generatedAt: '' },
     };
@@ -35,7 +38,7 @@
     if (!state.operations || typeof state.operations !== 'object') state.operations = emptyOperations();
     const base = emptyOperations();
     Object.keys(base).forEach(key => { if (state.operations[key] === undefined) state.operations[key] = base[key]; });
-    ['candidates', 'imports', 'cashbook', 'invoices', 'showrooms', 'documents', 'generalNotes', 'chatMessages'].forEach(key => { if (!Array.isArray(state.operations[key])) state.operations[key] = []; });
+    ['candidates', 'imports', 'cashbook', 'invoices', 'showrooms', 'documents', 'generalNotes', 'chatMessages', 'homePins'].forEach(key => { if (!Array.isArray(state.operations[key])) state.operations[key] = []; });
     return state.operations;
   }
 
@@ -151,7 +154,7 @@
     document.head.append(style);
 
     const home = document.getElementById('home-view');
-    home.insertAdjacentHTML('beforeend', '<section class="section ops-section"><div class="section-heading"><div><h2>Betriebszentrale</h2><p class="muted">Ankauf, Bestand, Buchhaltung und Standorte in einem Arbeitsbereich.</p></div></div><div id="ops-dashboard" class="ops-grid"></div></section>');
+    home.insertAdjacentHTML('beforeend', '<section id="home-pins-section" class="section" hidden><div class="section-heading"><div><h2>Angeheftete Nachrichten</h2><p class="muted">Gemeinsam sichtbar · Karten ziehen oder mit den Pfeilen verschieben.</p></div><button class="secondary" data-ops-go="chat">Chat öffnen</button></div><div id="home-pins" class="home-pin-board"></div></section><section class="section ops-section"><div class="section-heading"><div><h2>Betriebszentrale</h2><p class="muted">Ankauf, Bestand, Buchhaltung und Standorte in einem Arbeitsbereich.</p></div></div><div id="ops-dashboard" class="ops-grid"></div></section>');
     document.querySelector('.app').insertAdjacentHTML('beforeend', [
       '<section id="procurement-view" class="view"><div class="hero"><div><h1>Ankauf & Marktprüfung</h1><p class="subtitle">Kandidaten strukturiert prüfen, vergleichen und bewusst entscheiden.</p></div><button class="secondary" data-ops-go="imports">Import-Hub</button></div><div id="procurement-content"></div></section>',
       '<section id="imports-view" class="view"><div class="hero"><div><h1>Import-Hub</h1><p class="subtitle">Inserate kontrolliert übernehmen – ohne ungesichertes Scraping.</p></div><button class="secondary" data-ops-go="procurement">Ankauf öffnen</button></div><div id="imports-content"></div></section>',
@@ -166,6 +169,15 @@
     ].join(''));
   }
 
+  function renderHomePins() {
+    const section = document.getElementById('home-pins-section');
+    const board = document.getElementById('home-pins');
+    if (!section || !board) return;
+    const pins = read().homePins;
+    section.hidden = !pins.length;
+    board.innerHTML = pins.map((pin, index) => '<article class="home-pin-card" draggable="true" tabindex="0" data-home-pin="' + esc(pin.id) + '"><div class="home-pin-top"><span class="home-pin-handle" title="Zum Verschieben ziehen">⠿ Notizkarte</span><button class="home-pin-remove" data-ops-action="remove-home-pin" data-id="' + esc(pin.id) + '" aria-label="Angeheftete Notiz entfernen">×</button></div><p>' + esc(pin.text) + '</p><div class="home-pin-meta"><span>' + esc(pin.originalAuthor || pin.author || 'Gemeinsamer Zugriff') + ' · ' + esc(api.formatDate(pin.createdAt)) + '</span><span class="home-pin-move"><button data-ops-action="move-home-pin" data-direction="-1" data-id="' + esc(pin.id) + '" aria-label="Notiz nach links verschieben"' + (index === 0 ? ' disabled' : '') + '>←</button><button data-ops-action="move-home-pin" data-direction="1" data-id="' + esc(pin.id) + '" aria-label="Notiz nach rechts verschieben"' + (index === pins.length - 1 ? ' disabled' : '') + '>→</button></span></div></article>').join('');
+  }
+
   function renderDashboard() {
     const ops = read();
     const vehicles = api.vehicles();
@@ -173,6 +185,7 @@
     const openCandidates = ops.candidates.filter(candidate => !['Abgelehnt', 'Übernommen'].includes(candidate.status)).length;
     const watched = ops.candidates.filter(candidate => candidate.status === 'Beobachtung').length;
     const showrooms = ops.showrooms.length;
+    renderHomePins();
     document.getElementById('ops-dashboard').innerHTML = [
       ['Ankauf prüfen', openCandidates, 'procurement', 'Kandidaten & transparente Ankaufanalyse'],
       ['Beobachtung', watched, 'inventory', 'Preis- und Mängelrisiken nachhalten'],
@@ -256,10 +269,14 @@
     const sharedPersistence = api.extensionSyncAvailable ? api.extensionSyncAvailable() : false;
     const messages = ops.chatMessages.filter(message => message && typeof message === 'object' && (!query || [message.text, message.author].join(' ').toLowerCase().includes(query))).sort((left, right) => new Date(left.createdAt || 0) - new Date(right.createdAt || 0));
     const formatTime = date => { const parsed = new Date(date); return Number.isNaN(parsed.getTime()) ? 'Zeit unbekannt' : new Intl.DateTimeFormat('de-DE', { dateStyle: 'short', timeStyle: 'short' }).format(parsed); };
-    const stream = messages.length ? messages.map(message => '<article class="chat-message' + (message.author === ownName ? ' own' : '') + '"><div class="chat-meta"><b>' + esc(message.author || 'Gemeinsamer Zugriff') + '</b><span class="muted">' + esc(formatTime(message.createdAt)) + '</span></div><div class="chat-text">' + esc(message.text || '') + '</div></article>').join('') : '<div class="ops-empty">' + (query ? 'Keine Nachricht passt zur Suche.' : 'Noch keine Nachrichten. Schreibe die erste Nachricht.') + '</div>';
+    const stream = messages.length ? messages.map(message => {
+      const selected = selectedChatMessageId === message.id;
+      const pinned = ops.homePins.some(pin => pin.sourceMessageId === message.id);
+      return '<article class="chat-message' + (message.author === ownName ? ' own' : '') + (selected ? ' selected' : '') + '" tabindex="0" role="button" aria-expanded="' + selected + '" data-chat-select="' + esc(message.id) + '"><div class="chat-meta"><b>' + esc(message.author || 'Gemeinsamer Zugriff') + '</b><span class="muted">' + esc(formatTime(message.createdAt)) + '</span></div><div class="chat-text">' + esc(message.text || '') + '</div><div class="chat-message-actions"' + (selected ? '' : ' hidden') + '><button class="secondary" data-ops-action="pin-chat-note" data-id="' + esc(message.id) + '"' + (pinned ? ' disabled' : '') + '>' + (pinned ? '✓ Auf Homescreen angeheftet' : '⌖ Als Notiz anheften') + '</button></div></article>';
+    }).join('') : '<div class="ops-empty">' + (query ? 'Keine Nachricht passt zur Suche.' : 'Noch keine Nachrichten. Schreibe die erste Nachricht.') + '</div>';
     const container = document.getElementById('chat-content');
     if (!container) return;
-    container.innerHTML = '<article class="card form-card chat-compose"><div class="section-heading"><div><h2>Nachricht schreiben <span class="ops-chip">Chat 2.0</span></h2><p class="muted">Einfach schreiben und senden. Alle berechtigten Nutzer sehen denselben Verlauf.</p></div><span class="ops-chip">' + (sharedPersistence ? 'Dauerhaft & gemeinsam' : 'Dauerhaft auf diesem Gerät') + '</span></div><label>Nachricht<textarea id="chat-text" placeholder="Nachricht schreiben …"></textarea></label><div class="form-actions"><button class="primary" data-ops-action="send-chat">Senden</button></div><p class="muted">Enter sendet · Umschalt + Enter fügt eine neue Zeile ein. ' + (sharedPersistence ? 'Nachrichten werden im gemeinsamen Supabase-Datenbestand gespeichert.' : 'Für die geräteübergreifende Speicherung muss einmalig die mitgelieferte Chat-Migration ausgeführt werden.') + '</p></article><section class="section"><div class="section-heading"><div><h2>Chatverlauf</h2><p class="muted">' + ops.chatMessages.length + ' gespeicherte Nachrichten</p></div><input id="chat-search" type="search" value="' + esc(chatSearch) + '" placeholder="Verlauf durchsuchen" aria-label="Chatverlauf durchsuchen" /></div><div id="chat-stream" class="chat-stream">' + stream + '</div></section>';
+    container.innerHTML = '<article class="card form-card chat-compose"><div class="section-heading"><div><h2>Nachricht schreiben <span class="ops-chip">Chat 2.0</span></h2><p class="muted">Einfach schreiben und senden. Alle berechtigten Nutzer sehen denselben Verlauf.</p></div><span class="ops-chip">' + (sharedPersistence ? 'Dauerhaft & gemeinsam' : 'Dauerhaft auf diesem Gerät') + '</span></div><label>Nachricht<textarea id="chat-text" placeholder="Nachricht schreiben …"></textarea></label><div class="form-actions"><button class="primary" data-ops-action="send-chat">Senden</button></div><p class="muted">Enter sendet · Umschalt + Enter fügt eine neue Zeile ein. Nachricht im Verlauf anklicken, um sie als gemeinsame Notizkarte auf dem Homescreen anzuheften. ' + (sharedPersistence ? 'Nachrichten und Notizkarten werden im gemeinsamen Supabase-Datenbestand gespeichert.' : 'Für die geräteübergreifende Speicherung muss einmalig die mitgelieferte Chat-Migration ausgeführt werden.') + '</p></article><section class="section"><div class="section-heading"><div><h2>Chatverlauf</h2><p class="muted">' + ops.chatMessages.length + ' gespeicherte Nachrichten</p></div><input id="chat-search" type="search" value="' + esc(chatSearch) + '" placeholder="Verlauf durchsuchen" aria-label="Chatverlauf durchsuchen" /></div><div id="chat-stream" class="chat-stream">' + stream + '</div></section>';
     requestAnimationFrame(() => { const chat = document.getElementById('chat-stream'); if (chat && !query) chat.scrollTop = chat.scrollHeight; });
   }
 
@@ -466,6 +483,35 @@
       api.notify('Nachricht wurde im gemeinsamen Chat gespeichert.');
       return renderChat();
     }
+    if (action === 'pin-chat-note') {
+      const messageId = button.dataset.id;
+      let added = false;
+      mutate(ops => {
+        const message = byId(ops.chatMessages, messageId);
+        if (!message || ops.homePins.some(pin => pin.sourceMessageId === messageId)) return;
+        const pinnedAt = now();
+        ops.generalNotes.push({ id: id('team-note'), text: message.text, author: api.userName ? api.userName() : 'Gemeinsamer Zugriff', originalAuthor: message.author, sourceMessageId: message.id, createdAt: pinnedAt });
+        ops.homePins.push({ id: id('home-pin'), text: message.text, author: api.userName ? api.userName() : 'Gemeinsamer Zugriff', originalAuthor: message.author, sourceMessageId: message.id, messageCreatedAt: message.createdAt, createdAt: pinnedAt });
+        added = true;
+      });
+      api.notify(added ? 'Nachricht wurde als gemeinsame Notizkarte auf dem Homescreen angeheftet.' : 'Diese Nachricht ist bereits angeheftet.');
+      return renderChat();
+    }
+    if (action === 'remove-home-pin') {
+      mutate(ops => { ops.homePins = ops.homePins.filter(pin => pin.id !== button.dataset.id); });
+      api.notify('Notizkarte wurde vom gemeinsamen Homescreen entfernt.');
+      return renderDashboard();
+    }
+    if (action === 'move-home-pin') {
+      mutate(ops => {
+        const current = ops.homePins.findIndex(pin => pin.id === button.dataset.id);
+        const next = current + number(button.dataset.direction);
+        if (current < 0 || next < 0 || next >= ops.homePins.length) return;
+        const [pin] = ops.homePins.splice(current, 1);
+        ops.homePins.splice(next, 0, pin);
+      });
+      return renderDashboard();
+    }
     if (action === 'react-chat' || action === 'toggle-chat-important') {
       mutate(ops => { const message = byId(ops.chatMessages, button.dataset.id); if (!message) return; if (action === 'react-chat') message.likes = number(message.likes) + 1; else message.important = !message.important; });
       return renderChat();
@@ -570,7 +616,19 @@
       const nav = event.target.closest('[data-ops-go]');
       if (nav) { event.preventDefault(); if (nav.dataset.opsGo === 'vehicle-notes') selectedNoteVehicleId = nav.dataset.vehicleId || selectedNoteVehicleId; screen(nav.dataset.opsGo); return; }
       const action = event.target.closest('[data-ops-action]');
-      if (action) { event.preventDefault(); handleAction(action.dataset.opsAction, action); }
+      if (action) { event.preventDefault(); return handleAction(action.dataset.opsAction, action); }
+      const chatMessage = event.target.closest('[data-chat-select]');
+      if (chatMessage) {
+        const willOpen = selectedChatMessageId !== chatMessage.dataset.chatSelect;
+        selectedChatMessageId = willOpen ? chatMessage.dataset.chatSelect : '';
+        document.querySelectorAll('[data-chat-select]').forEach(item => {
+          const open = item.dataset.chatSelect === selectedChatMessageId;
+          item.classList.toggle('selected', open);
+          item.setAttribute('aria-expanded', String(open));
+          const actions = item.querySelector('.chat-message-actions');
+          if (actions) actions.hidden = !open;
+        });
+      }
     });
     document.addEventListener('change', onFileChange);
     document.addEventListener('input', event => {
@@ -585,6 +643,44 @@
         event.preventDefault();
         handleAction('send-chat', event.target);
       }
+      if (event.target.matches('[data-chat-select]') && (event.key === 'Enter' || event.key === ' ')) {
+        event.preventDefault();
+        event.target.click();
+      }
+    });
+    document.addEventListener('dragstart', event => {
+      const pin = event.target.closest('[data-home-pin]');
+      if (!pin) return;
+      draggedHomePinId = pin.dataset.homePin;
+      pin.classList.add('dragging');
+      event.dataTransfer.effectAllowed = 'move';
+      event.dataTransfer.setData('text/plain', draggedHomePinId);
+    });
+    document.addEventListener('dragover', event => {
+      if (!draggedHomePinId || !event.target.closest('[data-home-pin]')) return;
+      event.preventDefault();
+      event.dataTransfer.dropEffect = 'move';
+    });
+    document.addEventListener('drop', event => {
+      const target = event.target.closest('[data-home-pin]');
+      if (!target || !draggedHomePinId || target.dataset.homePin === draggedHomePinId) return;
+      event.preventDefault();
+      mutate(ops => {
+        const sourceIndex = ops.homePins.findIndex(pin => pin.id === draggedHomePinId);
+        const targetIndex = ops.homePins.findIndex(pin => pin.id === target.dataset.homePin);
+        if (sourceIndex < 0 || targetIndex < 0) return;
+        const after = event.clientX > target.getBoundingClientRect().left + target.getBoundingClientRect().width / 2;
+        const [pin] = ops.homePins.splice(sourceIndex, 1);
+        let insertAt = targetIndex + (after ? 1 : 0);
+        if (sourceIndex < insertAt) insertAt -= 1;
+        ops.homePins.splice(insertAt, 0, pin);
+      });
+      draggedHomePinId = '';
+      renderDashboard();
+    });
+    document.addEventListener('dragend', event => {
+      event.target.closest('[data-home-pin]')?.classList.remove('dragging');
+      draggedHomePinId = '';
     });
     document.addEventListener('carsautohaus:operations-updated', () => {
       const active = document.querySelector('.view.active')?.id?.replace('-view', '');

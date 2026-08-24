@@ -170,6 +170,15 @@ label, .calculation summary, .compare-pro-table thead th { color: var(--light-gr
 .chat-message.own .chat-text, .chat-message.own .chat-meta b { color: var(--white-accent) !important; }
 .chat-message.own .muted { color: rgba(244, 247, 251, .72) !important; }
 
+.chat-message { cursor: pointer; transition: border-color .16s ease, transform .16s ease; }
+.chat-message.selected {
+  border-color: var(--turquoise) !important;
+  box-shadow: 0 0 0 3px rgba(38, 198, 201, .12) !important;
+}
+.chat-message-actions { margin-top: 11px; padding-top: 10px; border-top: 1px solid var(--line); }
+.chat-message-actions .secondary { min-height: 36px; font-size: .76rem; }
+.chat-message-actions .secondary:disabled { color: var(--turquoise) !important; opacity: .82; }
+
 .chat-text, .ops-doc, .calculation > ol, .calculation > .score-breakdown,
 .calculation > .cost-lines { color: var(--light-gray) !important; }
 
@@ -182,6 +191,78 @@ label, .calculation summary, .compare-pro-table thead th { color: var(--light-gr
   color: var(--light-gray) !important;
   background: rgba(36, 87, 214, .12) !important;
 }
+
+.comparison-table-wrap { overflow-x: hidden !important; }
+.compare-pro-table {
+  width: 100% !important;
+  min-width: 0 !important;
+  table-layout: fixed !important;
+}
+.compare-pro-table th,
+.compare-pro-table td {
+  padding: 10px 8px !important;
+  font-size: .76rem !important;
+  line-height: 1.38 !important;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+.compare-pro-table th:first-child { width: 22% !important; }
+.compare-pro-table th:nth-child(2),
+.compare-pro-table th:nth-child(3),
+.compare-pro-table td:nth-child(2),
+.compare-pro-table td:nth-child(3) { width: 39% !important; }
+
+.compare-list,
+.compare-item,
+#comparison-results .compare-item,
+.comparison-table tr,
+.comparison-table td,
+.comparison-table th {
+  color: var(--light-gray) !important;
+  border-color: var(--line) !important;
+  background: var(--navy) !important;
+}
+.compare-item:hover {
+  border-color: var(--turquoise) !important;
+  background: var(--dark-blue) !important;
+}
+
+.home-pin-board {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+  gap: 14px;
+}
+.home-pin-card {
+  min-height: 170px;
+  padding: 17px;
+  color: var(--light-gray);
+  border: 1px solid var(--line);
+  border-left: 4px solid var(--turquoise);
+  border-radius: 19px;
+  background: var(--dark-blue);
+  box-shadow: var(--shadow-sm), inset 0 -3px 0 rgba(36, 87, 214, .35);
+  cursor: grab;
+  transition: transform .16s ease, border-color .16s ease, opacity .16s ease;
+}
+.home-pin-card:hover { border-color: var(--turquoise); transform: translateY(-2px); }
+.home-pin-card.dragging { opacity: .52; cursor: grabbing; transform: scale(.98); }
+.home-pin-card p { min-height: 72px; margin: 16px 0; color: var(--light-gray); line-height: 1.5; white-space: pre-wrap; }
+.home-pin-top, .home-pin-meta { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.home-pin-handle { color: var(--turquoise); font-size: .75rem; font-weight: 800; letter-spacing: .04em; text-transform: uppercase; }
+.home-pin-remove, .home-pin-move button {
+  display: inline-grid;
+  place-items: center;
+  min-width: 32px;
+  height: 32px;
+  color: var(--light-gray);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--navy);
+}
+.home-pin-remove:hover, .home-pin-move button:hover:not(:disabled) { color: var(--white-accent); border-color: var(--turquoise); background: var(--royal-blue); }
+.home-pin-move { display: inline-flex; gap: 5px; }
+.home-pin-move button:disabled { opacity: .32; }
+.home-pin-meta > span:first-child { color: rgba(185, 196, 208, .68); font-size: .72rem; }
 
 .ops-table th, .ops-table td, .comparison-table th, .comparison-table td, .form-section,
 .vehicle-row { border-color: var(--line) !important; }
@@ -213,4 +294,9 @@ a { color: var(--turquoise) !important; }
 @media (max-width: 620px) {
   .topbar { background: var(--deep-navy) !important; }
   .bottom-nav { background: rgba(6, 16, 31, .96) !important; }
+  .compare-pro-table th, .compare-pro-table td { padding: 8px 5px !important; font-size: .64rem !important; }
+  .compare-pro-table th:first-child { width: 24% !important; }
+  .compare-pro-table th:nth-child(2), .compare-pro-table th:nth-child(3),
+  .compare-pro-table td:nth-child(2), .compare-pro-table td:nth-child(3) { width: 38% !important; }
+  .home-pin-board { grid-template-columns: 1fr; }
 }
