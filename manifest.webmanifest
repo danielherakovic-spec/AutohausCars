@@ -1,11 +1,11 @@
 {
-  "name": "AutoValue Pro",
-  "short_name": "AutoValue",
+  "name": "CarsAutoHaus",
+  "short_name": "CarsAutoHaus",
   "description": "Fahrzeug-Einkauf, Vergleich und Gewinnbewertung",
   "start_url": "./",
   "display": "standalone",
-  "background_color": "#080c12",
-  "theme_color": "#0b111a",
+  "background_color": "#06101f",
+  "theme_color": "#06101f",
   "lang": "de",
   "icons": [
     { "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" },
