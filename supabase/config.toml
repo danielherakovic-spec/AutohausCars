@@ -1,8 +1,7 @@
-[functions.import-listing]
-# CORS preflights have no JWT. The function verifies the signed-in user itself.
-verify_jwt = false
+# Local CLI identifier only; production is chosen explicitly with --project-ref.
+project_id = "carsautohaus"
 
-[functions.enter-shared-workspace]
-# Keep Supabase's platform-level JWT check enabled. The handler also verifies that
-# the caller is an anonymous session before it uses the server-only privileged key.
-verify_jwt = true
+# Authentication is checked inside the function using Supabase Auth + RLS membership.
+# Required for publishable keys/anonymous authenticated sessions as well as legacy JWT keys.
+[functions.analyze-vehicles]
+verify_jwt = false

@@ -1,4 +1,62 @@
-# CarsAutoHaus – gemeinsames Passwort ohne Edge Function
+# CarsAutoHaus – gemeinsamer Bestand, vollständiger Export und KI-Analyse
+
+## Neu in v16: KI-Fahrzeugranking als Hauptbereich
+
+In der festen Hauptnavigation steht **KI-Fahrzeugranking** direkt neben Autosuche, Vergleich und Statistik. Der Bereich öffnet die vollständige Ranking-Arbeitsfläche unmittelbar; ein vorheriger Klick auf Export ist nicht mehr nötig. Beim ersten Öffnen wird aus dem aktuellen gemeinsamen Bestand automatisch derselbe vollständige, nicht gelöschte Fahrzeugdatenstand vorbereitet. Ohne Fahrzeugakten erscheint ein eigener Leerzustand. Ändert sich der Bestand, wird ein noch offenes Ergebnis verworfen beziehungsweise beim erneuten Öffnen aktualisiert – alte Ergebnisse werden nicht still weiterverwendet.
+
+Consent, Serverauthentifizierung, Abgleich mit dem autorisierten Workspace, Mengen-/Kostenlimits, Laden, Abbruch, Wiederholung, Konfigurations- und Providerfehler sowie die vollständige Ergebnisvalidierung bleiben unverändert. Rang, Sterne, Faktoren, lange Begründung und Kontaktfragen erscheinen direkt auf dieser Seite. JSON, CSV und der Ergebnis-Download bleiben dort verfügbar. **Schnellzugriff → Export & KI** sowie **Profil → CSV exportieren** funktionieren weiter: Sie laden sofort das vollständige CSV herunter und öffnen anschließend dieselbe Ranking-Seite. Die Hauptnavigation selbst startet keinen Download und keine KI-Anfrage.
+
+## Neu in v15: vollständiger Export & serverseitige KI
+
+**Schnellzugriff → Export & KI** (oder **Profil → CSV exportieren**) lädt weiterhin ein CSV herunter und öffnet die neue Auswertungsansicht. **Vollständiges JSON** liefert zusätzlich das verlustfreie Format. Alle nicht gelöschten Fahrzeugakten aus Bestand, Ankaufkandidaten und Import-Hub werden exportiert, unabhängig von Filtern, Favoriten und Status. Verkaufte/archivierte Akten bleiben als Referenzen enthalten. Bereits übernommene Inserate können als separate Quellakten erscheinen; jede hat eine eindeutige Export-ID.
+
+Jedes `record` enthält sämtliche gespeicherten Felder unverändert: Preise, technische Daten, Ausstattung, Zustand, Mängel, Beschreibung, Quelle, eigene Bewertungen, Foto-Referenz und vollständige Notizverläufe sowie unbekannte zukünftige Felder. `related` enthält per `vehicleId` zugeordnete Aufgaben und Betriebsdatensätze (Buchungen einschließlich gespeicherter Belegdaten, Rechnungen, Dokumente usw.) sowie den zugeordneten Showroom. Nicht zugeordneter Chat, allgemeine Notizen, Integrationsdaten und Zugangsdaten gehören nicht zum Fahrzeugexport. Externe Dateien/private Storage-Objekte bleiben Referenzen und werden nicht heruntergeladen oder visuell analysiert. JSON ist ein Fahrzeugdatenexport, **kein vollständiges Workspace-Backup und nicht für den bisherigen Backup-Importer**.
+
+CSV behält die bisherigen elf Übersichtsspalten und ergänzt die Vereinigung aller gespeicherten Felder (`Feld.*`) und Verknüpfungen (`Verknuepft.*`); Listen/Objekte werden als JSON-Zellen geschrieben. Texte mit möglichen Tabellenformeln erhalten einen Schutzpräfix. Für exakte Rohwerte oder lange Dokumenttexte JSON verwenden: Tabellenprogramme haben eigene Zellgrößenlimits. Der lokale Export hat keine künstliche Fahrzeugbegrenzung.
+
+Nach bewusster Zustimmung startet **Export mit KI analysieren**. Der vollständige Export geht über die neue Supabase Edge Function an OpenAI. Sie prüft zuerst den gültigen Auth-Token und die bestehende Workspace-Mitgliedschaft; eine anonyme Sitzung ohne erfolgreichen Passwortzugang reicht nicht. Über RLS liest sie den autorisierten Bestand erneut und vergleicht ihn vollständig mit dem Export. Bei Abweichungen gibt es einen Konflikthinweis statt einer Teilanalyse. Sie nutzt keinen Service-Role-Key, keine browserseitigen KI-Schlüssel und keine vom Browser vorgegebene Workspace-ID.
+
+Die Antwort enthält für jede Export-ID genau einen lückenlosen Rang, 1–5 Sterne zur **Kontaktpriorität**, eine Empfehlung, Datensicherheit, kurze Faktoren mit Belegen, eine ausführliche deutsche Begründung und Rückfragen für den Anbieter. Bereits gekaufte/verkaufte/archivierte/übernommene Akten werden als nicht ankaufbare Referenzen geprüft. Der Server fordert [OpenAI Structured Outputs](https://developers.openai.com/api/docs/guides/structured-outputs) mit striktem JSON-Schema an; Server **und** Browser validieren zusätzlich IDs, Ränge, Sterne, Vollständigkeit und Mindestlänge der Begründungen. Ungültige oder abgebrochene Antworten werden nicht als Ranking dargestellt. Die Einordnung ist eine KI-Schätzung auf Basis erfasster Angaben, kein Marktgutachten oder automatischer Kaufentscheid.
+
+**Datenschutz:** Die Freigabe umfasst auch eventuell personenbezogene Inhalte in Fahrzeugnotizen/Rechnungen/Dokumenten. Vor dem Start prüfen und unnötige personenbezogene Angaben entfernen. Keine Übertragung allein durch den Download; keine automatischen Wiederholungen. Ergebnisse liegen nur im Arbeitsspeicher der geöffneten Seite und lassen sich separat als JSON herunterladen. Keine Speicherung der Analyse im gemeinsamen Chat/Workspace. Die Function schreibt keine Nutzdaten oder Schlüssel in Logs. `store: false` deaktiviert die Responses-Anwendungsspeicherung, ist aber **keine Zusage vollständiger Null-Aufbewahrung**; die [OpenAI-Datenkontrollen](https://developers.openai.com/api/docs/guides/your-data) gelten weiterhin. Der Service Worker speichert nur explizite lokale App-Dateien, keine authentifizierten API-Antworten.
+
+### KI einmalig einrichten
+
+Nur für die neue KI-Funktion ist eine Edge Function nötig. Der bestehende **Passwortzugang bleibt unverändert eine RPC ohne Edge Function**. GitHub Pages kann selbst keine geheimen Server-Schlüssel halten. Es gibt keine vorhandene OpenAI-Konfiguration in dieser Ausgabe; ohne Einrichtung zeigt die neue Ansicht einen Fehler und lässt den Export verfügbar.
+
+1. Bisherige Website sichern. Aktualisierte statische Dateien einschließlich `vehicle-analysis.mjs`, `vehicle-analysis.css`, **`.nojekyll`** und **`supabase/functions/_shared/`** veröffentlichen. Die beiden `_shared`-Module werden auch vom Browser benötigt; `.nojekyll` verhindert, dass GitHub Pages sie wegen des Unterstrichs auslässt. Bestehende `config.js` behalten. Vorhandene Passwort-/Schema-/Chat-Migrationen nicht erneut ausführen.
+2. Im bestehenden Supabase-Projekt einmal **nur** [`supabase/vehicle-analysis-migration.sql`](supabase/vehicle-analysis-migration.sql) im SQL Editor ausführen. Diese additive Migration ergänzt eine private, atomare Kontingenttabelle und `av_claim_vehicle_analysis()`. Sie ändert keine Bestandsdaten, Passwort-RPC oder bestehende RLS-Regel.
+3. Unter **Edge Functions → Secrets** `OPENAI_API_KEY`, `OPENAI_MODEL` und `ANALYSIS_ALLOWED_ORIGINS` setzen. `OPENAI_MODEL` ist eine explizite, für Ihr API-Projekt freigeschaltete Modell-ID mit Responses-API und Strict-JSON-Schema-Unterstützung; es gibt keinen stillen Modell-Fallback. Das Modell muss den konfigurierten Output-Rahmen von 32.768 Tokens unterstützen. `ANALYSIS_ALLOWED_ORIGINS` ist z. B. `https://IHR-NAME.github.io` – ohne Repository-Pfad/Schrägstrich am Ende, mehrere Origins kommagetrennt. Keine Wildcards. **Den OpenAI-Schlüssel niemals in config.js, GitHub, Chat oder öffentliche Dateien eintragen.** Supabase stellt `SUPABASE_URL` und öffentliche API-Keys als Serverumgebung bereit; unterstützt werden `SUPABASE_PUBLISHABLE_KEYS`, `SUPABASE_PUBLISHABLE_KEY` und der vorhandene `SUPABASE_ANON_KEY`. Die Function nutzt `Deno.env.get`. Siehe [Supabase-Secrets](https://supabase.com/docs/guides/functions/secrets).
+4. Die Function samt beiden Shared-Modulen mit der Supabase CLI aus diesem Ordner deployen. Falls bereits eine eigene `supabase/config.toml` existiert, nur den Abschnitt `[functions.analyze-vehicles]` übernehmen, nicht die übrige Konfiguration ersetzen. In einem Terminal mit installierter Supabase CLI:
+
+   ```sh
+   supabase login
+   supabase functions deploy analyze-vehicles --project-ref IHR_PROJEKT_REF
+   ```
+
+   Die mitgelieferte Function-Konfiguration setzt `verify_jwt = false`, weil die Function Auth-Token ausdrücklich über `/auth/v1/user` prüft und anschließend die Workspace-Mitgliedschaft/RLS erzwingt; der Publishable Key ist kein Benutzer-Token. **Diese Prüfungen nicht entfernen.** Keine Service-Role-/Secret-Keys an den Browser weitergeben. Deployment erfolgt in dasselbe Projekt wie Ihre bestehende `config.js`. Siehe [Supabase-Key-Migration](https://supabase.com/docs/guides/getting-started/migrating-to-new-api-keys) und [Function-Deployment](https://supabase.com/docs/guides/functions/deploy).
+5. Seite neu laden und am gemeinsamen Bestand anmelden. Auf **Export & KI** klicken, CSV und JSON kontrollieren. Danach Datenübertragung bestätigen und eine kleine, nicht vertrauliche Testauswahl im **Testprojekt** analysieren. Im echten Bestand wird immer der gesamte Export ausgewertet, keine versteckte Auswahl. Jede Export-ID muss einmal im Ergebnis vorkommen. Zweite Sitzung ohne Workspace-Mitgliedschaft muss abgewiesen werden.
+
+Für lokale Entwicklung `.env.example` nur als Vorlage verwenden; tatsächliche Secrets außerhalb des Website-Ordners halten und mit `supabase functions serve analyze-vehicles --env-file PFAD_ZUR_PRIVATEN_ENV` laden. Keine echten `.env`-Dateien in ZIPs oder GitHub veröffentlichen. Das beigefügte `.gitignore` ist zusätzlicher Schutz, kein Schutz vor dem Hochladen über eine Weboberfläche.
+
+### Grenzen, Kosten und Fehlerzustände
+
+- Synchroner, vollständiger Analyseaufruf: höchstens **50 Akten und 1 MiB Anfrage**, bis zu 32.768 Output-Tokens, serverseitiges Zeitlimit 110 Sekunden. Größere Exporte werden weiterhin vollständig heruntergeladen; die KI lehnt sie sichtbar ab, statt Felder/Fahrzeuge abzuschneiden. Für größere Bestände ist eine gesonderte asynchrone Job-/Batch-Erweiterung nötig. Auch innerhalb dieser Grenzen können Modellkontext oder Antwortzeit überschritten werden; dann erscheint ein Fehler, kein Teilranking.
+- Je Workspace mindestens **zwei Minuten Abstand** und höchstens **zehn gestartete Versuche pro UTC-Tag**, atomar in Postgres. Auch fehlgeschlagene Provider-Aufrufe zählen, um Kosten durch Wiederholungen zu begrenzen. Zusätzlich ein OpenAI-Projektbudget setzen. Ein Abbruch im Browser beendet das Warten, garantiert aber nicht, dass bereits laufende Serverarbeit kostenlos gestoppt wird.
+- Fehlende Function/CORS: Server nicht erreichbar. Fehlende Secrets: Einrichtungshinweis. Fehlende Migration: Kontingentfreigabe nicht eingerichtet. `401/403`: Anmeldung/Mitgliedschaft prüfen. `409`: erst vollständig synchronisieren, dann neu exportieren. `413`: Größenlimit. `429`: später erneut versuchen/Kontingent prüfen. `502/504`: Modell-/Providerfehler, ungültige oder unvollständige Antwort bzw. Zeitlimit; kein Teilranking.
+- Ändert sich der Bestand während/nach einer Analyse, wird das Ergebnis in der Oberfläche als veraltet verworfen. Neu exportieren und bewusst erneut starten. Keine Hintergrundübertragung.
+
+### Validierung dieser Ausgabe
+
+Automatisierte Tests mit Node.js 22+ (keine zusätzlichen Pakete):
+
+```sh
+node --test tests/vehicle-analysis.test.mjs
+```
+
+Die Tests decken vollständige/verschachtelte Exportdaten, Preisfelder, CSV-Injection-Schutz, Datenschutzabgrenzung, JWT-/Mitgliedschaftsprüfung, veraltete/zu große Exporte, Schema/IDs/Ränge, Providerfehler, Consent, Abbruch/Timeout/Wiederholung und HTML-Escaping ab. HTTP-Aufrufe werden durch kontrollierte Testantworten ersetzt; das sind **keine echten KI-Ergebnisse**. In dieser Arbeitsumgebung waren weder OpenAI-Key noch Supabase-Deployzugang, Deno oder eine lokale Postgres-Instanz verfügbar. Daher sind Live-Deployment, SQL-Ausführung, echte Modellantworten und ein angemeldeter Browser-End-to-End-Test nach Einrichtung noch erforderlich.
+
+## Bestehender Passwortzugang
 
 Diese Ausgabe öffnet den gemeinsamen Fahrzeugbestand mit einem einzigen Passwort, **ohne Supabase Edge Function**. Der Browser meldet sich dafür nur anonym bei Supabase an und ruft anschließend eine sichere Datenbankfunktion (`av_enter_shared_workspace`) auf. Nach erfolgreicher Passwortprüfung erhält genau diese anonyme Sitzung die bestehende Workspace-Mitgliedschaft.
 
@@ -103,7 +161,11 @@ Für Ankaufentscheidungen bleiben Besichtigung, Probefahrt, Unterlagen-, Histori
 
 ## Enthaltene Dateien
 
-- `index.html`, `app.js`, `config.js`: statische Browser-App ohne Edge-Function-Aufrufe.
+- `index.html`, `app.js`, `config.js`: statische Browser-App; Passwortzugang weiterhin per RPC, optionale KI per geschützter Edge Function.
+- `vehicle-analysis.mjs`, `vehicle-analysis.css`: vollständiger Export, Consent, Lade-/Fehlerzustände und KI-Ergebnisansicht.
+- `supabase/functions/_shared/`: Exportmodell und gemeinsames Antwortschema mit Validierung (auch für den Browser erforderlich).
+- `supabase/functions/analyze-vehicles/`: serverseitiger OpenAI-Aufruf; Schlüssel ausschließlich in Supabase-Secrets.
+- `supabase/vehicle-analysis-migration.sql`, `supabase/config.toml`: additive Kontingentfreigabe und Function-Konfiguration.
 - `premium-ui.css`: das responsive CarsAutoHaus-Designsystem.
 - `palette-lock.css`: abschließende, verlaufsfreie Royalblau-/Türkis-Palette für jede sichtbare Oberfläche.
 - `comparison-pro.js`: Zwei-Fahrzeug-Vergleich mit interner Preis-, Aufbereitungs- und Ratingerklärung.
