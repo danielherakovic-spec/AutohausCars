@@ -1,0 +1,22 @@
+#vehicle-ranking-view { min-width: 0; }
+#vehicle-ranking-view .analysis-consent { display: flex; align-items: flex-start; gap: 12px; margin: 18px 0; line-height: 1.55; }
+#vehicle-ranking-view .analysis-consent input { flex: 0 0 20px; width: 20px; min-height: 20px; margin-top: 4px; }
+#vehicle-ranking-view .analysis-results { display: grid; gap: 18px; margin-top: 20px; }
+#vehicle-ranking-view .analysis-title { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; }
+#vehicle-ranking-view .analysis-stars { color: #26c6c9; letter-spacing: .12em; font-size: 1.2rem; }
+#vehicle-ranking-view .analysis-prices { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin: 18px 0; }
+#vehicle-ranking-view dd { margin: 5px 0 0; font-weight: 700; }
+#vehicle-ranking-view .analysis-rationale { white-space: pre-wrap; line-height: 1.65; }
+#vehicle-ranking-view p, #vehicle-ranking-view li, #vehicle-ranking-view h2, #vehicle-ranking-view dd { overflow-wrap: anywhere; min-width: 0; }
+#vehicle-ranking-view li { margin: 8px 0; }
+#vehicle-ranking-view button:disabled { opacity: .55; cursor: not-allowed; }
+#vehicle-ranking-view [hidden] { display: none !important; }
+#vehicle-ranking-view button:focus-visible, #vehicle-ranking-view input:focus-visible { outline: 2px solid #26c6c9; outline-offset: 3px; }
+.bottom-nav .nav-inner { width: min(900px, 100%); }
+.bottom-nav .nav-button { min-width: 0; line-height: 1.08; overflow-wrap: anywhere; }
+@media (max-width: 620px) {
+  .app { padding-bottom: 112px; }
+  .bottom-nav .nav-button { min-height: 62px; padding-inline: 2px; font-size: .52rem; }
+  .bottom-nav .nav-button .nav-icon { font-size: 1.1rem; }
+}
+@media (max-width: 480px) { #vehicle-ranking-view .analysis-prices { grid-template-columns: 1fr; } }

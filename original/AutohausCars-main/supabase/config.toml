@@ -1,0 +1,7 @@
+# Local CLI identifier only; production is chosen explicitly with --project-ref.
+project_id = "carsautohaus"
+
+# Authentication is checked inside the function using Supabase Auth + RLS membership.
+# Required for publishable keys/anonymous authenticated sessions as well as legacy JWT keys.
+[functions.analyze-vehicles]
+verify_jwt = false

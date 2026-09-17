@@ -1,0 +1,120 @@
+/* Scoped to the pinboard so the existing website keeps its own appearance. */
+#pinboard-view {
+  color-scheme: light;
+  --pb-ink: #262c29; --pb-muted: #7a827c; --pb-line: #e3e7e0; --pb-accent: #365647;
+  position: fixed; inset: 0; z-index: 40; padding: 0; margin: 0; max-width: none;
+  background: #f7f8f4; color: var(--pb-ink); font: 14px/1.5 Inter, system-ui, sans-serif;
+  animation: none; isolation: isolate; text-align: left;
+}
+body.pb-open { overflow: hidden; }
+body.locked #pinboard-view { display: none !important; }
+#pinboard-view *, #pb-picker * { box-sizing: border-box; }
+#pinboard-view button, #pb-picker button {
+  appearance: none; min-height: 36px; border: 1px solid var(--pb-line, #e3e7e0); border-radius: 10px;
+  padding: 8px 12px; background: #fff; color: #333d36; font: inherit; font-weight: 500;
+  box-shadow: none; cursor: pointer; transform: none; letter-spacing: 0;
+}
+#pinboard-view button:hover, #pb-picker button:hover { background: #edf1e9; }
+#pinboard-view button:disabled { opacity: .45; cursor: not-allowed; }
+#pinboard-view :focus-visible, #pb-picker :focus-visible { outline: 3px solid #6c9881; outline-offset: 3px; }
+#pinboard-view .pb-primary, #pb-picker .pb-primary { background: #365647; color: #fff; border-color: #365647; }
+#pinboard-view .pb-primary:hover, #pb-picker .pb-primary:hover { background: #284336; }
+#pinboard-view .pb-top {
+  position: absolute; inset: 0 0 auto; z-index: 4; display: flex; align-items: center; justify-content: space-between;
+  gap: 20px; padding: 18px 28px; border-bottom: 1px solid #e7ebe3; background: #fafbf8ed; backdrop-filter: blur(16px);
+}
+#pinboard-view .pb-brand, #pinboard-view .pb-actions, #pinboard-view .pb-controls { display: flex; align-items: center; gap: 8px; }
+#pinboard-view .pb-brand { gap: 14px; }
+#pinboard-view .pb-brand h1 { font: 600 18px/1.2 Inter, system-ui, sans-serif; letter-spacing: -.5px; margin: 0; color: #26382d; }
+#pinboard-view .pb-brand small { display: block; font-size: 11px; color: #7a827c; margin-top: 3px; }
+#pinboard-view .pb-icon { width: 36px; padding: 6px; font-size: 18px; flex-shrink: 0; }
+#pinboard-view .pb-viewport { position: absolute; inset: 80px 0 66px; overflow: hidden; touch-action: none; cursor: grab; background-image: radial-gradient(#d8ddd2 1px, transparent 1px); background-size: 24px 24px; }
+#pinboard-view .pb-viewport:active { cursor: grabbing; }
+#pinboard-view .pb-world { position: absolute; width: 0; height: 0; transform-origin: 0 0; }
+#pinboard-view .pb-edges { position: absolute; top: 0; left: 0; width: 1px; height: 1px; overflow: visible; pointer-events: none; }
+#pinboard-view .pb-thread { fill: none; stroke: #9caea0; stroke-width: 2; }
+#pinboard-view .pb-thread-hit { fill: none; stroke: transparent; stroke-width: 18; pointer-events: stroke; cursor: pointer; }
+#pinboard-view .pb-thread-hit:hover + .pb-thread, #pinboard-view .pb-edge:focus .pb-thread { stroke: #365647; stroke-width: 3; }
+#pinboard-view .pb-card {
+  position: absolute; width: 240px; border: 1px solid #00000013; border-radius: 15px; padding: 0;
+  background: var(--pb-card-bg, #fff); color: var(--pb-card-ink, #262c29); box-shadow: 0 3px 6px #23372105, 0 12px 32px #2337210c;
+  cursor: default; overflow: visible; transition: box-shadow .15s; user-select: none;
+}
+#pinboard-view .pb-card.pb-selected { outline: 2px solid #527a62; outline-offset: 4px; }
+#pinboard-view .pb-card.pb-link-source { outline: 2px dashed #527a62; outline-offset: 4px; }
+#pinboard-view .pb-card.pb-dragging { box-shadow: 0 18px 40px #23372126; }
+#pinboard-view .pb-card-head { display: flex; align-items: center; gap: 4px; padding: 8px 10px; height: 44px; }
+#pinboard-view .pb-handle { flex: 1; text-align: left; color: inherit; opacity: .65; font-size: 11px; letter-spacing: .08em; cursor: grab; min-width: 0; touch-action: none; }
+#pinboard-view .pb-handle:active { cursor: grabbing; }
+#pinboard-view .pb-card button { color: inherit; background: transparent; border: 0; min-height: 28px; padding: 2px 5px; border-radius: 6px; }
+#pinboard-view .pb-card button:hover { background: #88888825; }
+#pinboard-view .pb-color { display: inline-flex; align-items: center; justify-content: center; width: 26px; height: 28px; margin: 0; }
+#pinboard-view input[type=color] { appearance: none; padding: 0; width: 18px; height: 18px; border: 1px solid #89918780; border-radius: 50%; background: transparent; cursor: pointer; overflow: hidden; }
+#pinboard-view input[type=color]::-webkit-color-swatch-wrapper { padding: 0; }
+#pinboard-view input[type=color]::-webkit-color-swatch { border: 0; border-radius: 50%; }
+#pinboard-view .pb-photo { margin: 0 10px; height: 126px; border-radius: 8px; overflow: hidden; background: #00000006; display: grid; place-items: center; font-size: 12px; color: inherit; }
+#pinboard-view .pb-photo img { width: 100%; height: 100%; object-fit: cover; display: block; }
+#pinboard-view .pb-card-body { padding: 12px 15px 14px; }
+#pinboard-view .pb-card h2 { color: inherit; margin: 0 0 5px; font-size: 15px; font-weight: 600; letter-spacing: -.25px; overflow-wrap: anywhere; }
+#pinboard-view .pb-price { display: block; font-size: 19px; font-weight: 600; margin-bottom: 9px; letter-spacing: -.5px; }
+#pinboard-view .pb-specs { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; font-size: 11px; opacity: .8; }
+#pinboard-view .pb-select { display: flex; align-items: center; gap: 8px; margin: 14px 0 0; padding-top: 11px; border-top: 1px solid #88888830; color: inherit; font-size: 12px; cursor: pointer; }
+#pinboard-view .pb-select input { width: 15px; height: 15px; margin: 0; accent-color: #365647; }
+#pinboard-view .pb-note-title, #pinboard-view .pb-note-text { display: block; width: 100%; border: 0; border-radius: 0; background: transparent; color: inherit; padding: 0; margin: 0; box-shadow: none; user-select: text; }
+#pinboard-view .pb-note-title { font: 600 16px/1.5 Inter, system-ui, sans-serif; margin-bottom: 10px; }
+#pinboard-view .pb-note-text { min-height: 130px; height: 150px; resize: vertical; font: 13px/1.75 Inter, system-ui, sans-serif; touch-action: auto; }
+#pinboard-view .pb-note-title::placeholder, #pinboard-view .pb-note-text::placeholder { color: inherit; opacity: .4; }
+#pinboard-view .pb-port { position: absolute; top: calc(50% - 12px); right: -13px; width: 24px; height: 24px; min-height: 24px !important; background: #fff !important; color: #678273 !important; border: 1px solid #c5d1c6 !important; border-radius: 50% !important; padding: 0 !important; cursor: crosshair; touch-action: none; z-index: 2; }
+#pinboard-view .pb-empty { position: absolute; top: 45%; left: 50%; transform: translate(-50%, -50%); text-align: center; color: #899286; width: min(320px, 80%); pointer-events: none; }
+#pinboard-view .pb-empty[hidden] { display: none; }
+#pinboard-view .pb-empty svg { width: 36px; height: 36px; margin-bottom: 14px; opacity: .6; }
+#pinboard-view .pb-empty h2 { margin: 0 0 7px; font: 500 21px/1.4 Inter, system-ui, sans-serif; letter-spacing: -.6px; color: #74816f; }
+#pinboard-view .pb-empty p { font-size: 13px; margin: 0; color: #899286; }
+#pinboard-view .pb-bottom { position: absolute; inset: auto 0 0; min-height: 66px; padding: 12px 24px max(12px, env(safe-area-inset-bottom)); display: flex; align-items: center; justify-content: space-between; gap: 12px; background: #fafbf8ed; border-top: 1px solid #e7ebe3; z-index: 4; }
+#pinboard-view .pb-status { font-size: 11px; color: #7a827c; }
+#pinboard-view .pb-controls { flex-shrink: 0; }
+#pinboard-view .pb-controls button { font-size: 12px; }
+#pinboard-view .pb-zoom { min-width: 44px; font-size: 11px; text-align: center; color: #727c70; }
+#pinboard-view .pb-help { position: absolute; top: 92px; right: 24px; max-width: min(330px, calc(100vw - 40px)); border: 1px solid #e3e7e0; background: #fff; border-radius: 14px; padding: 20px; box-shadow: 0 15px 50px #00000012; z-index: 6; color: #556051; font-size: 13px; }
+#pinboard-view .pb-help p { margin: 0 0 10px; }
+#pinboard-view .pb-help p:last-child { margin-bottom: 0; }
+#pinboard-view [hidden] { display: none !important; }
+#pb-picker { width: min(520px, calc(100vw - 24px)); max-height: min(720px, 90dvh); padding: 24px; margin: auto; border: 1px solid #e3e7e0; border-radius: 20px; background: #fafbf8; color: #262c29; box-shadow: 0 30px 100px #00000025; font: 14px/1.5 Inter, system-ui, sans-serif; }
+#pb-picker::backdrop { background: #1b2b2140; backdrop-filter: blur(3px); }
+#pb-picker { color-scheme: light; }
+/* The existing palette lock deliberately uses global !important rules. */
+#pinboard-view .pb-viewport { background-image: radial-gradient(#d8ddd2 1px, transparent 1px) !important; }
+#pinboard-view h1, #pinboard-view h2, #pinboard-view label { color: inherit !important; }
+#pinboard-view .pb-note-title, #pinboard-view .pb-note-text, #pinboard-view input[type=color] {
+  color: inherit !important; background: transparent !important; box-shadow: none !important;
+}
+#pinboard-view input[type=color] { width: 18px !important; height: 18px !important; min-height: 18px !important; }
+#pinboard-view .pb-note-title { min-height: 0; }
+#pinboard-view .pb-select input { box-shadow: none !important; }
+#pinboard-view .pb-note-title::placeholder, #pinboard-view .pb-note-text::placeholder { color: inherit !important; }
+#pb-picker h2 { color: #26382d !important; }
+#pb-picker input { color: #262c29 !important; background: #fff !important; border-color: #dce2d8 !important; box-shadow: none !important; }
+#pb-picker input::placeholder { color: #7a827c !important; }
+#pb-picker .pb-picker-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+#pb-picker h2 { font-size: 20px; margin: 0; color: #26382d; }
+#pb-picker p { color: #7a827c; font-size: 13px; margin: 0 0 18px; }
+#pb-picker input { width: 100%; border: 1px solid #dce2d8; background: #fff; color: #262c29; border-radius: 10px; padding: 12px; font: inherit; box-shadow: none; }
+#pb-picker .pb-results { display: grid; gap: 8px; margin-top: 16px; max-height: 52dvh; overflow: auto; }
+#pb-picker .pb-result { display: flex; align-items: center; gap: 12px; text-align: left; width: 100%; padding: 10px; }
+#pb-picker .pb-result img, #pb-picker .pb-result-placeholder { width: 66px; height: 48px; object-fit: cover; border-radius: 6px; background: #edf0e9; display: grid; place-items: center; }
+#pb-picker .pb-result span { flex: 1; }
+#pb-picker .pb-result b, #pb-picker .pb-result small { display: block; }
+#pb-picker .pb-result small { color: #7a827c; font-size: 11px; }
+@media (max-width: 650px) {
+  #pinboard-view .pb-top { padding: 12px; gap: 10px; flex-wrap: wrap; }
+  #pinboard-view .pb-brand { flex: 1; }
+  #pinboard-view .pb-actions { width: 100%; gap: 6px; }
+  #pinboard-view .pb-actions button { flex: 1; padding: 8px; font-size: 12px; }
+  #pinboard-view .pb-viewport { top: 122px; bottom: 100px; }
+  #pinboard-view .pb-bottom { min-height: 100px; padding: 9px 12px; flex-wrap: wrap; gap: 6px; }
+  #pinboard-view .pb-status { width: 100%; }
+  #pinboard-view .pb-controls { gap: 4px; }
+  #pinboard-view .pb-controls button { padding: 6px 8px; }
+  #pinboard-view .pb-help { top: 134px; right: 12px; }
+}
+@media (prefers-reduced-motion: reduce) { #pinboard-view * { transition: none !important; } }
