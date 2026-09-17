@@ -42,6 +42,11 @@ const PHOTO_BUCKET = config.photoBucket || 'vehicle-photos';
       function notice(text){ const n=$('#notice'); n.textContent=text; n.classList.add('show'); setTimeout(()=>n.classList.remove('show'),2600); }
       function updateOperations(mutator){ mutator(state); state.version=num(state.version)+1; state.updatedAt=new Date().toISOString(); state.lastModifiedBy=currentUser?.name||state.name||'CarsAutoHaus'; cacheState(); saveState(); document.dispatchEvent(new CustomEvent('carsautohaus:operations-updated')); }
       window.CarsAutoHaus = { getState:()=>structuredClone(state), update:updateOperations, go:showView, notify:notice, euro, formatDate, vehicles:()=>structuredClone(visibleVehicles()), userName:()=>currentUser?.name||state.name||'Gemeinsamer Zugriff', extensionSyncAvailable:()=>extensionSyncAvailable, photoUrl:displayPhoto, workspaceKey:()=>workspaceId };
+      window.CarsAutoHaus.pinboard = {
+        async read(){ if(!client||!workspaceId)throw new Error('Bitte zuerst anmelden.');const {data,error}=await client.rpc('av_read_pinboard');if(error)throw error;return data; },
+        async write(patch,requestId){ if(!client||!workspaceId)throw new Error('Bitte zuerst anmelden.');const {data,error}=await client.rpc('av_patch_pinboard',{p_patch:patch,p_request_id:requestId});if(error)throw error;return data; },
+        subscribe(receive){ if(!client||!workspaceId)return ()=>{};const channel=client.channel(`av-pinboard-${workspaceId}`).on('postgres_changes',{event:'*',schema:'public',table:'av_pinboards',filter:`workspace_id=eq.${workspaceId}`},payload=>{if(payload.new?.state)receive(payload.new);}).subscribe();return ()=>client.removeChannel(channel); }
+      };
       const vehicleExport = installVehicleExport({ api: window.CarsAutoHaus, transport: async (dataset, signal) => {
         if (!client || !workspaceId) throw new Error('Bitte zuerst am gemeinsamen Bestand anmelden.');
         await saveChain; signal.throwIfAborted();

@@ -1,10 +1,10 @@
 # CarsAutoHaus – gemeinsamer Bestand, vollständiger Export und KI-Analyse
 
-## Neu in v17: freie Pinwand
+## Neu in v18: gemeinsame Pinwand und Rechner-Karte
 
-Über **Pinwand öffnen ↗** auf der Startseite oder **Pinwand** in der Navigation öffnet sich die neue Vollbildansicht. Frei bewegliche Auto- und Notizkarten, frei wählbare Farben, Fäden zwischen Karten und die Übergabe von zwei Fahrzeugen an Vergleich Pro sind integriert. Die Pinwand speichert auf diesem Gerät; Export/Import überträgt Sicherungen. Für diese Ergänzung ist keine Supabase-Migration nötig.
+Über **Pinwand öffnen ↗** auf der Startseite oder **Pinwand** in der Navigation öffnet sich die Vollbildansicht. Frei bewegliche Auto-, Notiz- und Rechner-Karten, Farben, Fäden und Vergleich Pro sind integriert. Karten, Positionen, Farben, Notizen und Rechnungen werden für alle Benutzer desselben Workspaces in Supabase gespeichert. Zoom und Vergleichsauswahl bleiben persönlich. Einmalig **supabase/pinboard-migration.sql** im bestehenden Supabase-Projekt ausführen.
 
-Die vollständige Upload- und Bedienungsanleitung steht in [PINNWAND-ANLEITUNG.md](PINNWAND-ANLEITUNG.md). Für das Update werden nur `index.html`, `app.js`, `comparison-pro.js`, `sw.js`, `pinboard.js` und `pinboard.css` benötigt.
+Die vollständige Supabase-, Upload- und Bedienungsanleitung steht in [PINNWAND-ANLEITUNG.md](PINNWAND-ANLEITUNG.md). Neben der SQL-Migration enthält das Update acht Website-Dateien: `index.html`, `app.js`, `comparison-pro.js`, `sw.js`, `pinboard.js`, `pinboard.css`, `pinboard-sync.js` und `pinboard-calculator.js`.
 
 ## Neu in v16: KI-Fahrzeugranking als Hauptbereich
 

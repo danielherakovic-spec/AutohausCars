@@ -118,3 +118,11 @@ body.locked #pinboard-view { display: none !important; }
   #pinboard-view .pb-help { top: 134px; right: 12px; }
 }
 @media (prefers-reduced-motion: reduce) { #pinboard-view * { transition: none !important; } }
+#pinboard-view .pb-calc-expression { width: 100%; padding: 8px; border: 1px solid #8884; border-radius: 8px; color: inherit !important; background: #8888880c !important; box-shadow: none !important; font-size: 13px; }
+#pinboard-view .pb-calc-expression::placeholder { color: inherit !important; opacity: .5; }
+#pinboard-view .pb-calc-result { display: block; min-height: 50px; padding: 10px 0; text-align: right; font-size: 22px; font-weight: 600; overflow-wrap: anywhere; }
+#pinboard-view .pb-calc-keys { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
+#pinboard-view .pb-calc-keys button { min-height: 35px; padding: 6px; border: 1px solid #8883; background: #8888880c; font-size: 15px; }
+#pinboard-view .pb-calc-keys button[data-pb-calc="="] { grid-column: 1 / -1; background: #365647; color: white; }
+#pinboard-view .pb-calc-hint { display: block; margin-top: 10px; font-size: 9px; opacity: .65; }
+@media (max-width: 650px) { #pinboard-view .pb-actions button { padding: 7px 4px; font-size: 10px; } }
