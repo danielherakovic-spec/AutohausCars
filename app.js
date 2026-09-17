@@ -41,7 +41,7 @@ const PHOTO_BUCKET = config.photoBucket || 'vehicle-photos';
       function thumbnail(v, className='vehicle-thumb'){ const photo=displayPhoto(v.photo); return `<div class="${className}">${photo ? `<img src="${photo}" alt="${esc(v.brand)} ${esc(v.model)}" />` : '🚘'}</div>`; }
       function notice(text){ const n=$('#notice'); n.textContent=text; n.classList.add('show'); setTimeout(()=>n.classList.remove('show'),2600); }
       function updateOperations(mutator){ mutator(state); state.version=num(state.version)+1; state.updatedAt=new Date().toISOString(); state.lastModifiedBy=currentUser?.name||state.name||'CarsAutoHaus'; cacheState(); saveState(); document.dispatchEvent(new CustomEvent('carsautohaus:operations-updated')); }
-      window.CarsAutoHaus = { getState:()=>structuredClone(state), update:updateOperations, go:showView, notify:notice, euro, formatDate, vehicles:()=>structuredClone(visibleVehicles()), userName:()=>currentUser?.name||state.name||'Gemeinsamer Zugriff', extensionSyncAvailable:()=>extensionSyncAvailable };
+      window.CarsAutoHaus = { getState:()=>structuredClone(state), update:updateOperations, go:showView, notify:notice, euro, formatDate, vehicles:()=>structuredClone(visibleVehicles()), userName:()=>currentUser?.name||state.name||'Gemeinsamer Zugriff', extensionSyncAvailable:()=>extensionSyncAvailable, photoUrl:displayPhoto, workspaceKey:()=>workspaceId };
       const vehicleExport = installVehicleExport({ api: window.CarsAutoHaus, transport: async (dataset, signal) => {
         if (!client || !workspaceId) throw new Error('Bitte zuerst am gemeinsamen Bestand anmelden.');
         await saveChain; signal.throwIfAborted();

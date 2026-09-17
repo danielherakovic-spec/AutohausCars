@@ -233,7 +233,7 @@ test('static integration: dedicated ranking navigation, unique DOM IDs, retained
   assert.ok(directOpen.includes('prepareRanking();')); assert.ok(directOpen.includes("api.go('vehicle-ranking')")); assert.ok(!directOpen.includes('download('));
   const legacyExport = ui.slice(ui.indexOf('const exportSnapshot = () =>'), ui.indexOf('const openRanking = () =>'));
   assert.ok(legacyExport.includes("api.go('vehicle-ranking')")); assert.ok(legacyExport.includes("download(exportCsv(dataset), 'csv')"));
-  assert.ok(html.includes('app.js?v=16')); assert.ok(html.includes('vehicle-analysis.css?v=16'));
+  assert.ok(html.includes('app.js?v=17')); assert.ok(html.includes('vehicle-analysis.css?v=16'));
   const rankingCss = read('vehicle-analysis.css');
   assert.ok(rankingCss.includes('.bottom-nav .nav-inner'));
   assert.ok(rankingCss.includes('width: min(900px, 100%)'));

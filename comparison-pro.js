@@ -275,6 +275,12 @@
     if (!api) return;
     inject();
     bind();
+    api.openPinboardComparison = ids => {
+      const valid = [...new Set(ids)].filter(id => api.vehicles().some(vehicle => vehicle.id === id));
+      if (valid.length !== 2) { api.notify('Bitte zwei vorhandene Fahrzeuge auswählen.'); return; }
+      [selectedLeft, selectedRight] = valid;
+      openComparison();
+    };
   }
 
   if (window.CarsAutoHaus) start();

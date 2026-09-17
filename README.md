@@ -1,5 +1,11 @@
 # CarsAutoHaus – gemeinsamer Bestand, vollständiger Export und KI-Analyse
 
+## Neu in v17: freie Pinwand
+
+Über **Pinwand öffnen ↗** auf der Startseite oder **Pinwand** in der Navigation öffnet sich die neue Vollbildansicht. Frei bewegliche Auto- und Notizkarten, frei wählbare Farben, Fäden zwischen Karten und die Übergabe von zwei Fahrzeugen an Vergleich Pro sind integriert. Die Pinwand speichert auf diesem Gerät; Export/Import überträgt Sicherungen. Für diese Ergänzung ist keine Supabase-Migration nötig.
+
+Die vollständige Upload- und Bedienungsanleitung steht in [PINNWAND-ANLEITUNG.md](PINNWAND-ANLEITUNG.md). Für das Update werden nur `index.html`, `app.js`, `comparison-pro.js`, `sw.js`, `pinboard.js` und `pinboard.css` benötigt.
+
 ## Neu in v16: KI-Fahrzeugranking als Hauptbereich
 
 In der festen Hauptnavigation steht **KI-Fahrzeugranking** direkt neben Autosuche, Vergleich und Statistik. Der Bereich öffnet die vollständige Ranking-Arbeitsfläche unmittelbar; ein vorheriger Klick auf Export ist nicht mehr nötig. Beim ersten Öffnen wird aus dem aktuellen gemeinsamen Bestand automatisch derselbe vollständige, nicht gelöschte Fahrzeugdatenstand vorbereitet. Ohne Fahrzeugakten erscheint ein eigener Leerzustand. Ändert sich der Bestand, wird ein noch offenes Ergebnis verworfen beziehungsweise beim erneuten Öffnen aktualisiert – alte Ergebnisse werden nicht still weiterverwendet.
