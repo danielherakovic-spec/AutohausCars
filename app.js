@@ -47,6 +47,12 @@ const PHOTO_BUCKET = config.photoBucket || 'vehicle-photos';
         async write(patch,requestId){ if(!client||!workspaceId)throw new Error('Bitte zuerst anmelden.');const {data,error}=await client.rpc('av_patch_pinboard',{p_patch:patch,p_request_id:requestId});if(error)throw error;return data; },
         subscribe(receive){ if(!client||!workspaceId)return ()=>{};const channel=client.channel(`av-pinboard-${workspaceId}`).on('postgres_changes',{event:'*',schema:'public',table:'av_pinboards',filter:`workspace_id=eq.${workspaceId}`},payload=>{if(payload.new?.state)receive(payload.new);}).subscribe();return ()=>client.removeChannel(channel); }
       };
+      window.CarsAutoHaus.workspaceData = {
+        async read(scope){ if(!client||!workspaceId)throw new Error('Bitte zuerst anmelden.');const {data,error}=await client.rpc('av_read_workspace_items',{p_scope:scope});if(error)throw error;return data; },
+        async write(scope,entity,expectedRevision){ if(!client||!workspaceId)throw new Error('Bitte zuerst anmelden.');const {data,error}=await client.rpc('av_put_workspace_item',{p_scope:scope,p_entity:entity,p_expected_revision:expectedRevision});if(error)throw error;return data; },
+        async remove(scope,id,expectedRevision){ if(!client||!workspaceId)throw new Error('Bitte zuerst anmelden.');const {data,error}=await client.rpc('av_remove_workspace_item',{p_scope:scope,p_id:id,p_expected_revision:expectedRevision});if(error)throw error;return data; },
+        subscribe(scope,receive){ if(!client||!workspaceId)return ()=>{};const channel=client.channel(`av-workspace-items-${scope}-${workspaceId}`).on('postgres_changes',{event:'*',schema:'public',table:'av_workspace_items',filter:`workspace_id=eq.${workspaceId}`},payload=>{if(payload.new?.scope===scope)receive(payload.new);}).subscribe();return ()=>client.removeChannel(channel); }
+      };
       const vehicleExport = installVehicleExport({ api: window.CarsAutoHaus, transport: async (dataset, signal) => {
         if (!client || !workspaceId) throw new Error('Bitte zuerst am gemeinsamen Bestand anmelden.');
         await saveChain; signal.throwIfAborted();

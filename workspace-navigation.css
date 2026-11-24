@@ -1,0 +1,11 @@
+/* Keep every destination reachable, including the new workspaces, on small screens. */
+.bottom-nav { width: min(1180px, calc(100% - 24px)) !important; max-width: none !important; }
+.bottom-nav .nav-inner { width: min(1280px,100%); overflow-x: auto; justify-content: flex-start; scrollbar-width: thin; }
+.bottom-nav .nav-button { flex: 1 0 86px; font-size: .78rem; min-height: 54px; padding: 7px 8px; }
+.bottom-nav .nav-button:focus-visible { outline: 2px solid #8de6e4; outline-offset: -2px; }
+body:has(#calendar-view.active) #mobile-new, body:has(#garage-view.active) #mobile-new { display: none; }
+@media (max-width: 650px) {
+  .bottom-nav { padding-inline: 5px; }
+  .bottom-nav .nav-button { flex: 0 0 76px; font-size: .75rem; min-height: 56px; }
+  .bottom-nav .nav-button .nav-icon { font-size: 1.1rem; }
+}
