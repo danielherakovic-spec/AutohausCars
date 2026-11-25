@@ -1,6 +1,6 @@
-import { LEVELS, partVisible } from './garage-visibility.js';
-import { createGarageScene } from './garage-model.js';
-import { PARTS, BODY_TYPES, bodyType, numeric, partCost, finances, recordId } from './garage-core.js';
+import { LEVELS, partVisible } from './garage-visibility.js?v=23';
+import { createGarageScene } from './garage-model.js?v=23';
+import { PARTS, BODY_TYPES, bodyType, numeric, partCost, finances, recordId } from './garage-core.js?v=23';
 
 const esc=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const money=value=>new Intl.NumberFormat('de-DE',{style:'currency',currency:'EUR',maximumFractionDigits:2}).format(value||0);
@@ -48,7 +48,7 @@ function createScene(){
       const box=$('.gg-stage').getBoundingClientRect();tooltip.style.left=Math.max(8,Math.min(box.width-250,event.clientX-box.left+16))+'px';tooltip.style.top=Math.max(8,Math.min(box.height-130,event.clientY-box.top+16))+'px';
     },onError:text=>{$('#garage-fallback').hidden=false;$('#garage-fallback').textContent=text;}});
     refreshModel();scene.setGroup($('#garage-level').value);scene.setFloor($('#garage-floor').getAttribute('aria-pressed')==='true');scene.setActive(active);
-  }catch(error){$('#garage-fallback').hidden=false;$('#garage-fallback').textContent='Die 3D-Ansicht benötigt WebGL. Du kannst alle Bauteile, Notizen und Kosten weiterhin über die Liste unten bearbeiten.';console.warn('Garage WebGL unavailable:',error.message);}
+  }catch(error){$('#garage-fallback').hidden=false;$('#garage-fallback').textContent='Die Fahrzeugansicht konnte nicht gestartet werden. Bitte lade die Seite neu. Bauteilliste und Kosten bleiben verfügbar.';console.warn('Garage canvas unavailable:',error.message);}
 }
 function selectPart(id){
   if(!PARTS.some(p=>p.id===id)||!protectDraft())return;

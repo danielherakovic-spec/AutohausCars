@@ -1,4 +1,4 @@
-import { EXTRA_PARTS } from './garage-parts.js';
+import { EXTRA_PARTS } from './garage-parts.js?v=23';
 export const PARTS = [
   ['hood','Motorhaube','Karosserie'],['roof','Dach','Karosserie'],['trunk','Heckklappe','Karosserie'],
   ['bumper-front','Stoßfänger vorne','Karosserie'],['bumper-rear','Stoßfänger hinten','Karosserie'],

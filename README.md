@@ -1,5 +1,5 @@
-# CarsAutoHaus v22
+# CarsAutoHaus v23
 
-Neu in der Garage: Boden einschließlich Plattform, Ringen und Raster an/aus; vier Ansichtsstufen vom Außenkleid bis zur Technik; Innenraum, Fahrwerk oder einzelne Baugruppen gezielt anzeigen; „Alle Teile gleichzeitig“ zeigt das gesamte Modell. Notizen und Kosten bleiben erhalten.
+Die drehbare Fahrzeugansicht wird mit Canvas 2D aus echter 3D-Geometrie gezeichnet und benötigt kein WebGL. Drehen, Zoomen, Bauteilauswahl und Ansichtsstufen bleiben verfügbar. Boden: aus blendet Boden, Präsentierteller, Ringe und Raster gemeinsam aus. Die Darstellung ist eine transparente technische Linienansicht.
 
-ZIP entpacken, Inhalt im GitHub-Repositoryordner ersetzen, committen und Push origin wählen. Danach Strg + F5. Eigene config.js beibehalten. Bei bereits eingerichtetem v20/v21 ist kein Supabase-Update erforderlich. Noch nicht live veröffentlicht.
+Alle Dateien im Repository durch den Inhalt dieses Pakets ersetzen, committen und pushen. Nach dem abgeschlossenen Pages-Build Strg + F5 drücken. Die Garagenmodule besitzen neue Versionsadressen, damit keine alten Teile aus dem Browsercache geladen werden. Eigene config.js beibehalten. Kein zusätzliches Supabase-Update nach v20 erforderlich. Noch nicht live veröffentlicht.

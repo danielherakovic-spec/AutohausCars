@@ -1,6 +1,7 @@
-import { partVisible } from './garage-visibility.js';
-import { EXTRA_PARTS } from './garage-parts.js';
-import { PARTS } from './garage-core.js';
+import { CanvasGarageRenderer } from './garage-canvas.js?v=23';
+import { partVisible } from './garage-visibility.js?v=23';
+import { EXTRA_PARTS } from './garage-parts.js?v=23';
+import { PARTS } from './garage-core.js?v=23';
 import * as THREE from './vendor/three.module.js';
 import { OrbitControls } from './vendor/OrbitControls.js';
 
@@ -8,7 +9,7 @@ import { OrbitControls } from './vendor/OrbitControls.js';
 export function createGarageScene(host,{onHover,onSelect,onError}={}) {
   const scene=new THREE.Scene(); scene.background=new THREE.Color('#080e14'); scene.fog=new THREE.Fog('#080e14',14,40);
   const camera=new THREE.PerspectiveCamera(36,1,.05,100); camera.position.set(5.6,3.3,5.6);
-  const renderer=new THREE.WebGLRenderer({antialias:true,alpha:false});
+  const renderer=new CanvasGarageRenderer();
   renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,2)); renderer.outputColorSpace=THREE.SRGBColorSpace; renderer.toneMapping=THREE.ACESFilmicToneMapping; renderer.toneMappingExposure=1.25;
   renderer.domElement.setAttribute('aria-label','Drehbares transparentes Fahrzeugmodell. Bauteile alternativ in der Liste auswählen.'); renderer.domElement.tabIndex=0;
   host.append(renderer.domElement);
@@ -107,11 +108,10 @@ export function createGarageScene(host,{onHover,onSelect,onError}={}) {
   renderer.domElement.addEventListener('pointerleave',()=>{hovered='';setHighlight();onHover?.('');});
   renderer.domElement.addEventListener('pointerdown',event=>{pointerStart={x:event.clientX,y:event.clientY};});
   renderer.domElement.addEventListener('pointerup',event=>{if(pointerStart&&Math.hypot(event.clientX-pointerStart.x,event.clientY-pointerStart.y)<6){const id=hit(event);if(id)onSelect?.(id);}pointerStart=null;});
-  renderer.domElement.addEventListener('webglcontextlost',event=>{event.preventDefault();onError?.('Die 3D-Ansicht wurde unterbrochen. Bitte Seite neu laden. Die Bauteilliste bleibt nutzbar.');});
   function resize(){const w=host.clientWidth,h=host.clientHeight;if(!w||!h)return;renderer.setSize(w,h,false);camera.aspect=w/h;camera.zoom=Math.min(1,Math.max(.5,camera.aspect/1.3));camera.updateProjectionMatrix();draw();}
   const observer=new ResizeObserver(resize);observer.observe(host);
   function draw(){renderer.render(scene,camera);}
-  function animate(){if(!active)return;frame=requestAnimationFrame(animate);controls.autoRotate=rotate;controls.autoRotateSpeed=.65;controls.update();draw();}
+  let lastFrame=0;function animate(time=0){if(!active)return;frame=requestAnimationFrame(animate);if(time-lastFrame<33)return;lastFrame=time;controls.autoRotate=rotate;controls.autoRotateSpeed=.65;controls.update();draw();}
   function preset(view='perspective'){const positions={perspective:[5.6,3.3,5.6],front:[8,1.7,0],rear:[-8,1.7,0],side:[0,1.8,8],top:[0,9,.01]};camera.position.set(...(positions[view]||positions.perspective));controls.target.set(0,.9,0);controls.update();draw();}
   return {build,resize,setGroup,setFloor(value){ground.visible=!!value;draw();},select(id){selected=id;setHighlight();draw();},setActive(value){active=value;cancelAnimationFrame(frame);if(active){resize();animate();}},preset,setXray(value){xray=value;setHighlight();draw();},setRotate(value){rotate=value;},zoom(factor){const delta=camera.position.clone().sub(controls.target).multiplyScalar(factor);if(delta.length()>=controls.minDistance&&delta.length()<=controls.maxDistance)camera.position.copy(controls.target).add(delta);controls.update();draw();},dispose(){active=false;cancelAnimationFrame(frame);observer.disconnect();controls.dispose();clearModel();renderer.dispose();renderer.domElement.remove();}};
 }
