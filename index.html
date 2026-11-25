@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-    <meta name="theme-color" content="#101318" />
+    <meta name="theme-color" content="#06101f" />
     <meta name="description" content="CarsAutoHaus – Fahrzeug-Einkauf, Preisvergleich und Gewinnbewertung" />
     <link rel="manifest" href="manifest.webmanifest" />
     <title>CarsAutoHaus</title>
@@ -176,13 +176,13 @@
       @media (max-width:920px) { .stats-grid { grid-template-columns:repeat(3,1fr); } .vehicle-grid { grid-template-columns:repeat(2,1fr); } .checkboxes { grid-template-columns:repeat(3,1fr); } .form-grid { grid-template-columns:repeat(2,1fr); } }
       @media (max-width:620px) { .app { padding-left:14px; padding-right:14px; padding-bottom:128px; } .topbar { height:63px; } .topbar .brand-mark { width:33px; height:33px; } .sync-status span:last-child { display:none; } .hero { padding:21px 0 16px; } .hero .primary { min-width:46px; padding:0 13px; font-size:0; } .hero .primary::before { content:'＋'; font-size:1.45rem; } .stats-grid { grid-template-columns:repeat(2,1fr); gap:9px; } .stat { min-height:96px; padding:14px; } .stat strong { font-size:1.22rem; } .quick-grid { grid-template-columns:repeat(2,1fr); gap:9px; } .quick { min-height:104px; padding:14px; } .split { grid-template-columns:1fr; gap:12px; } .vehicle-grid { grid-template-columns:1fr; } .form-grid { grid-template-columns:1fr; gap:11px; } .checkboxes,.detail-grid,.cost-summary { grid-template-columns:1fr 1fr; gap:9px; } .form-card { padding:15px; } .form-section { padding:18px 0; } label { font-size:.82rem; } label input,label select { min-height:52px; font-size:1rem; } .toolbar { flex-wrap:nowrap; overflow-x:auto; padding:2px 1px 9px; margin-right:-14px; } .toolbar .search { min-width:260px; } .toolbar .filter { flex:0 0 150px; } .vehicle-card { display:grid; grid-template-columns:128px 1fr; min-height:140px; } .vehicle-cover { height:100%; min-height:140px; border-radius:17px 0 0 17px; } .vehicle-body { align-self:center; } .vehicle-price { margin:7px 0 5px; } .details-header { flex-direction:column; } .details-title { align-items:flex-start; } .two-col { grid-template-columns:1fr; } .modal { padding:16px; border-radius:18px; } .auth-card { padding:21px; } .compare-list { overflow:hidden; } .compare-item { grid-template-columns:1fr auto; gap:8px; } .section-heading { align-items:flex-start; } .section-heading .secondary { min-height:40px; padding:0 10px; font-size:.78rem; } .voice-assistant { padding:15px; margin-bottom:18px; } .voice-assistant-head { gap:10px; } .voice-controls { display:grid; grid-template-columns:1fr 1fr; } .voice-controls button { width:100%; } .voice-progress-copy { font-size:.76rem; } .mobile-fab { display:grid; place-items:center; position:fixed; z-index:24; right:18px; bottom:80px; width:58px; height:58px; color:#fff; border:0; border-radius:20px; background:var(--blue); box-shadow:0 14px 30px rgba(37,134,247,.38); font-size:1.9rem; } .mobile-form-save { display:block; position:fixed; z-index:25; right:14px; left:14px; bottom:72px; width:calc(100% - 28px); min-height:52px; color:#fff; border:0; border-radius:16px; background:var(--blue); box-shadow:0 13px 28px rgba(37,134,247,.32); font-weight:800; } .mobile-form-save[hidden] { display:none; } }
     </style>
-    <link rel="stylesheet" href="premium-ui.css?v=20" />
-  <link rel="stylesheet" href="color-base.css?v=20" />
-  <link rel="stylesheet" href="pinboard.css?v=20" />
-  <link rel="stylesheet" href="calendar.css?v=20" />
-  <link rel="stylesheet" href="garage.css?v=20" />
-  <link rel="stylesheet" href="workspace-navigation.css?v=20" />
-  <link rel="stylesheet" href="refinement.css?v=20" />
+    <link rel="stylesheet" href="premium-ui.css?v=21" />
+  <link rel="stylesheet" href="color-base.css?v=21" />
+  <link rel="stylesheet" href="pinboard.css?v=21" />
+  <link rel="stylesheet" href="calendar.css?v=21" />
+  <link rel="stylesheet" href="garage.css?v=21" />
+  <link rel="stylesheet" href="workspace-navigation.css?v=21" />
+  <link rel="stylesheet" href="refinement.css?v=21" />
   </head>
   <body class="locked">
     <section id="auth-screen" class="auth-screen" aria-live="polite">
@@ -205,17 +205,7 @@
       <section id="home-view" class="view active">
         <div class="hero"><div><h1>Willkommen <span id="user-name">Daniel</span></h1><p class="subtitle">Dein Überblick für heute, <span id="today"></span>.</p></div><button class="primary" data-go="form">＋ Neues Auto</button></div>
         <div class="stats-grid" id="stats-grid"></div>
-        <div class="section"><div class="section-heading"><h2>Schnellzugriff</h2></div><div class="quick-grid">
-          <button class="quick" data-go="form"><span class="emoji">➕</span><b>Neues Auto</b><small>Fahrzeug erfassen</small></button>
-          <button class="quick" data-go="autos"><span class="emoji">🚗</span><b>Alle Fahrzeuge</b><small>Bestand verwalten</small></button>
-          <button class="quick" data-go="archive"><span class="emoji">▣</span><b>Archivierte Fahrzeuge</b><small>Archiv öffnen und wiederherstellen</small></button>
-          <button class="quick" data-go="tasks"><span class="emoji">☑</span><b>Offene Aufgaben</b><small>Erledigen, löschen und anpinnen</small></button>
-          <button class="quick" data-compare-go="compare-pro"><span class="emoji">⇄</span><b>Vergleich Pro</b><small>Fahrzeuge direkt gegenüberstellen</small></button>
-          <button class="quick" data-go="statistics"><span class="emoji">📈</span><b>Statistiken</b><small>Gewinne auswerten</small></button>
-          <button class="quick" data-go="favorites"><span class="emoji">★</span><b>Favoriten</b><small>Fahrzeuge beobachten</small></button>
-          <button class="quick" id="export-button"><span class="emoji">⇩</span><b>Bestand sichern</b><small>Alle Akten exportieren</small></button>
-          <button class="quick" data-go="showrooms"><span class="emoji">⌂</span><b>Showrooms</b><small>Standorte verwalten</small></button>
-        </div></div>
+        <div class="section"><div class="section-heading"><h2>Schnellzugriff</h2></div><div class="quick-grid"><h3 class="quick-section-title">Fahrzeuge</h3><button class="quick" data-go="autos"><span class="emoji">🚗</span><b>Alle Fahrzeuge</b><small>Bestand verwalten</small></button><button class="quick" data-go="archive"><span class="emoji">▣</span><b>Archivierte Fahrzeuge</b><small>Archiv öffnen und wiederherstellen</small></button><button class="quick" data-go="form"><span class="emoji">➕</span><b>Neues Auto</b><small>Fahrzeug erfassen</small></button><button class="quick" data-go="favorites"><span class="emoji">★</span><b>Favoriten</b><small>Fahrzeuge beobachten</small></button><button class="quick" data-compare-go="compare-pro"><span class="emoji">⇄</span><b>Vergleich Pro</b><small>Fahrzeuge direkt gegenüberstellen</small></button><button class="quick" data-go="showrooms"><span class="emoji">⌂</span><b>Showrooms</b><small>Standorte verwalten</small></button><h3 class="quick-section-title">Arbeitsbereiche</h3><button class="quick" data-go="garage"><span class="emoji">◇</span><b>Digitale Garage</b><small>Bauteile, Notizen und Kosten</small></button><button class="quick" data-go="calendar"><span class="emoji">▦</span><b>Kalender</b><small>Termine gemeinsam planen</small></button><button class="quick" data-go="pinboard"><span class="emoji">▧</span><b>Pinwand</b><small>Fahrzeuge und Aufgaben verbinden</small></button><button class="quick" data-go="tasks"><span class="emoji">☑</span><b>Offene Aufgaben</b><small>Erledigen, löschen und anpinnen</small></button><h3 class="quick-section-title">Auswertung & Sicherung</h3><button class="quick" data-go="statistics"><span class="emoji">📈</span><b>Statistiken</b><small>Gewinne auswerten</small></button><button class="quick" id="export-button"><span class="emoji">⇩</span><b>Bestand sichern</b><small>Alle Akten exportieren</small></button></div></div>
         <section id="task-pins-section" class="section" hidden><h2>Angeheftete Aufgaben</h2><div id="task-pins" class="task-pin-grid"></div></section><div class="section split"><article class="card list-card"><div class="section-heading"><h2>Zuletzt bearbeitet</h2><button class="secondary" data-go="autos">Alle anzeigen</button></div><div id="recent-list"></div></article><article class="card list-card"><div class="section-heading"><h2>Offene Aufgaben</h2><button class="secondary" id="add-task">＋</button></div><div id="task-list"></div></article></div>
       </section>
 
@@ -307,19 +297,19 @@
     <div id="task-modal" class="modal-backdrop"><div class="modal"><div class="modal-head"><div><h2>Neue Aufgabe</h2><p class="muted">Sie erscheint auf deinem Dashboard.</p></div><button class="close-x" data-close-modal>×</button></div><form id="task-form"><div class="two-col"><label>Aufgabe<input name="title" required placeholder="z. B. Fiesta besichtigen" /></label><label>Termin<input name="date" required type="date" /></label></div><div class="form-actions"><button type="button" class="secondary" data-close-modal>Abbrechen</button><button class="primary" type="submit">Hinzufügen</button></div></form></div></div>
     <div id="compare-modal" class="modal-backdrop"><div class="modal"><div class="modal-head"><div><h2>Fahrzeuge vergleichen</h2><p class="muted">Die Unterschiede sind aus Sicht des ausgewählten Fahrzeugs eingefärbt.</p></div><button class="close-x" data-close-modal>×</button></div><div id="compare-modal-content"></div></div></div>
     <script src="config.js"></script>
-    <script src="inventory-core.js?v=20"></script>
-    <script type="module" src="app.js?v=20"></script>
+    <script src="inventory-core.js?v=21"></script>
+    <script type="module" src="app.js?v=21"></script>
     <script src="voice-assistant.js" defer></script>
     <script src="free-dictation.js" defer></script>
     <script src="listing-paste-import.js" defer></script>
-    <script src="showrooms.js?v=20" defer></script>
-    <script src="comparison-pro.js?v=20" defer></script>
-    <script src="pinboard-sync.js?v=20" defer></script>
-    <script src="pinboard-calculator.js?v=20" defer></script>
-    <script src="pinboard.js?v=20" defer></script>
-    <script src="workspace-data.js?v=20" defer></script>
-    <script src="calendar-core.js?v=20" defer></script>
-    <script src="calendar.js?v=20" defer></script>
-    <script type="module" src="garage.js?v=20"></script>
+    <script src="showrooms.js?v=21" defer></script>
+    <script src="comparison-pro.js?v=21" defer></script>
+    <script src="pinboard-sync.js?v=21" defer></script>
+    <script src="pinboard-calculator.js?v=21" defer></script>
+    <script src="pinboard.js?v=21" defer></script>
+    <script src="workspace-data.js?v=21" defer></script>
+    <script src="calendar-core.js?v=21" defer></script>
+    <script src="calendar.js?v=21" defer></script>
+    <script type="module" src="garage.js?v=21"></script>
   </body>
 </html>
