@@ -1,3 +1,4 @@
+import { EXTRA_PARTS } from './garage-parts.js';
 export const PARTS = [
   ['hood','Motorhaube','Karosserie'],['roof','Dach','Karosserie'],['trunk','Heckklappe','Karosserie'],
   ['bumper-front','Stoßfänger vorne','Karosserie'],['bumper-rear','Stoßfänger hinten','Karosserie'],
@@ -8,7 +9,7 @@ export const PARTS = [
   ['wheel-fl','Rad vorne links','Fahrwerk'],['wheel-fr','Rad vorne rechts','Fahrwerk'],['wheel-rl','Rad hinten links','Fahrwerk'],['wheel-rr','Rad hinten rechts','Fahrwerk'],
   ['brake-fl','Bremse vorne links','Fahrwerk'],['brake-fr','Bremse vorne rechts','Fahrwerk'],['brake-rl','Bremse hinten links','Fahrwerk'],['brake-rr','Bremse hinten rechts','Fahrwerk'],
   ['engine','Motor / Antrieb','Technik'],['transmission','Getriebe','Technik'],['battery','Batterie','Technik'],['exhaust','Abgasanlage','Technik'],['suspension-front','Vorderachse','Fahrwerk'],['suspension-rear','Hinterachse','Fahrwerk']
-].map(([id,name,group])=>({id,name,group}));
+].map(([id,name,group])=>({id,name,group})).concat(EXTRA_PARTS.map(({id,name,group})=>({id,name,group})));
 export const BODY_TYPES = {sedan:'Limousine',hatchback:'Kompakt',wagon:'Kombi',suv:'SUV',van:'Van'};
 export function bodyType(vehicle, override) {
   if (BODY_TYPES[override]) return override;

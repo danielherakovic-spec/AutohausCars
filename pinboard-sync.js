@@ -4,7 +4,7 @@
   const copy = value => structuredClone(value);
   const empty = () => ({ version: 1, cards: [], edges: [] });
   function diff(before, after) {
-    const patch = {};
+    const patch = {}; if (before.background !== after.background) patch.background = after.background || '#10151d';
     for (const key of ['cards', 'edges']) {
       const old = new Map(before[key].map(item => [item.id, item]));
       const next = new Map(after[key].map(item => [item.id, item]));
@@ -19,9 +19,9 @@
     }
     return patch;
   }
-  const hasChanges = patch => ['cards', 'edges'].some(key => ['add', 'update', 'remove'].some(kind => patch[key][kind].length));
+  const hasChanges = patch => !!patch.background || ['cards', 'edges'].some(key => ['add', 'update', 'remove'].some(kind => patch[key][kind].length));
   function apply(state, patch) {
-    const result = copy(state);
+    const result = copy(state); if (/^#[0-9a-f]{6}$/i.test(patch.background || '')) result.background = patch.background;
     for (const key of ['cards', 'edges']) {
       const items = new Map(result[key].map(item => [item.id, item]));
       for (const id of patch[key].remove) items.delete(id);

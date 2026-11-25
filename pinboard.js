@@ -4,11 +4,12 @@
   const PREFIX = 'carsautohaus-pinboard-shared-v1:';
   const WIDTH = 240;
   const escape = value => String(value ?? '').replace(/[&<>"']/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[char]));
-  const fresh = () => ({ version: 1, cards: [], edges: [], selected: [], viewport: { x: 0, y: 0, scale: 1 } });
+  const fresh = () => ({ version: 1, background: '#10151d', cards: [], edges: [], selected: [], viewport: { x: 0, y: 0, scale: 1 } });
   const uid = () => crypto.randomUUID();
   const clamp = (n, min, max) => Math.min(max, Math.max(min, n));
   const finite = (n, fallback = 0) => Number.isFinite(n) ? clamp(n, -1000000, 1000000) : fallback;
   let api, root, viewport, world, svg, picker, board = fresh(), storageKey, gesture, linkSource, linkPoint;
+  let boardReady = false, linkSide = "right";
   let active = false, saveTimer, undoState, undoAfter, storageFault = false;
   let sync, lastShared = { version: 1, cards: [], edges: [] }, deferredShared, syncLabel = 'Gemeinsame Pinwand wird geladen …';
   const $ = selector => root.querySelector(selector);
@@ -20,7 +21,7 @@
     const cards = value.cards.map(card => {
       if (!card || typeof card.id !== 'string' || ids.has(card.id) || !['note', 'car', 'calculator'].includes(card.type)) throw new Error('Ungültige Karte in der Sicherung.');
       ids.add(card.id);
-      return { id: card.id, type: card.type, vehicleId: String(card.vehicleId || ''), title: String(card.title || ''), text: String(card.text || ''),
+      return { id: card.id, type: card.type, taskId: String(card.taskId || ''), vehicleId: String(card.vehicleId || ''), title: String(card.title || ''), text: String(card.text || ''),
         expression: String(card.expression || ''), result: String(card.result || ''),
         x: finite(card.x), y: finite(card.y), z: finite(card.z), color: /^#[0-9a-f]{6}$/i.test(card.color) ? card.color : '#ffffff', height: clamp(finite(card.height, 150), 130, 1500) };
     });
@@ -30,19 +31,20 @@
       const pair = JSON.stringify([edge.from, edge.to].sort());
       if (pairs.has(pair)) return false;
       pairs.add(pair); return true;
-    }).map(edge => ({ id: typeof edge.id === 'string' ? edge.id : uid(), from: edge.from, to: edge.to }));
-    return { version: 1, cards, edges, selected: [...new Set((Array.isArray(value.selected) ? value.selected : []).filter(id => typeof id === 'string'))].slice(0, 2),
+    }).map(edge => ({ id: typeof edge.id === 'string' ? edge.id : uid(), from: edge.from, to: edge.to, fromSide: edge.fromSide==='left'?'left':'right', toSide: edge.toSide==='left'?'left':'right' }));
+    return { version: 1, background: /^#[0-9a-f]{6}$/i.test(value.background||'')?value.background:'#10151d', cards, edges, selected: [...new Set((Array.isArray(value.selected) ? value.selected : []).filter(id => typeof id === 'string'))].slice(0, 2),
       viewport: { x: finite(value.viewport?.x), y: finite(value.viewport?.y), scale: clamp(finite(value.viewport?.scale, 1), .3, 1.8) } };
   }
 
   function setStatus(message) { $('#pb-status').textContent = message; }
-  const shared = () => ({ version: 1, cards: structuredClone(board.cards), edges: structuredClone(board.edges) });
+  const shared = () => ({ version: 1, background: board.background, cards: structuredClone(board.cards), edges: structuredClone(board.edges) });
   function editing() { return gesture || saveTimer || root.contains(document.activeElement) && document.activeElement.matches('.pb-note-title, .pb-note-text, .pb-calc-expression, input[type=color]'); }
   function receiveShared(value) {
+    boardReady = true;
     if (editing()) { deferredShared = value; return; }
     deferredShared = null;
     const incoming = normalize({ ...value, selected: board.selected, viewport: board.viewport });
-    if (JSON.stringify({cards:incoming.cards,edges:incoming.edges}) === JSON.stringify({cards:board.cards,edges:board.edges})) return;
+    if (JSON.stringify({cards:incoming.cards,edges:incoming.edges,background:incoming.background}) === JSON.stringify({cards:board.cards,edges:board.edges,background:board.background})) return;
     board = incoming; lastShared = shared();
     if (active) render();
   }
@@ -60,7 +62,7 @@
     if (storageKey === key) { void sync?.refresh(); return; }
     if (storageKey) save();
     sync?.close();
-    storageKey = key; undoState = null; board = fresh();
+    storageKey = key; boardReady = false; undoState = null; board = fresh();
     try { const stored = localStorage.getItem(key); if (stored) board = normalize(JSON.parse(stored)); }
     catch { setStatus('Gespeicherte Pinwand konnte nicht gelesen werden.'); storageFault = true; }
     lastShared = shared();
@@ -73,20 +75,30 @@
       onChange: receiveShared,
       onStatus: message => { syncLabel = message; setStatus(message); }
     });
-    void sync.start();
+    void sync.start().then(()=>{if(active)render();});
   }
   function photo(vehicle) {
     const value = api.photoUrl(vehicle?.photo) || '';
     return /^(https?:|blob:|data:image\/(png|jpe?g|webp|gif);)/i.test(value) ? value : '';
   }
-  function name(vehicle) { return [vehicle.brand, vehicle.model].filter(Boolean).join(' ') || 'Fahrzeug'; }
+  function name(vehicle) { return api.vehicleName(vehicle); }
   function ink(color) {
     const rgb = color.slice(1).match(/../g).map(hex => parseInt(hex, 16) / 255).map(v => v <= .04045 ? v / 12.92 : ((v + .055) / 1.055) ** 2.4);
     return rgb[0] * .2126 + rgb[1] * .7152 + rgb[2] * .0722 > .179 ? '#262c29' : '#ffffff';
   }
   function cardElement(id) { return [...world.querySelectorAll('.pb-card')].find(el => el.dataset.card === id); }
   function paintCard(element, card) { element.style.setProperty('--pb-card-bg', card.color); element.style.setProperty('--pb-card-ink', ink(card.color)); }
+  function reconcileTasks(){
+    if(!boardReady)return;
+    const before=JSON.stringify(board.cards),tasks=api.getState().tasks.filter(t=>!t.deletedAt&&t.pinned);
+    board.cards=board.cards.filter(c=>!c.taskId||tasks.some(t=>t.id===c.taskId));
+    tasks.forEach((t,i)=>{if(!board.cards.some(c=>c.taskId===t.id))board.cards.push({id:'task-card-'+t.id,taskId:t.id,type:'note',vehicleId:'',title:'',text:'',expression:'',result:'',x:80+(i%4)*280,y:80+Math.floor(i/4)*300,z:0,color:'#dce8f7',height:150});});
+    const ids=new Set(board.cards.map(c=>c.id));board.edges=board.edges.filter(e=>ids.has(e.from)&&ids.has(e.to));
+    if(before!==JSON.stringify(board.cards))save();
+  }
   function render() {
+    reconcileTasks();
+    viewport.style.backgroundColor=board.background;viewport.style.setProperty('--pb-board-ink',ink(board.background));$('#pb-background').value=board.background;
     const vehicles = api.vehicles();
     board.cards.sort((a,b) => (a.z || 0) - (b.z || 0) || a.id.localeCompare(b.id));
     board.selected = board.selected.filter(id => vehicles.some(v => v.id === id) && board.cards.some(c => c.vehicleId === id && c.type === 'car'));
@@ -100,7 +112,7 @@
       paintCard(element, card);
       const title = card.type === 'calculator' ? 'Taschenrechner' : card.type === 'note' ? 'Notiz' : (vehicle ? name(vehicle) : 'Fahrzeug nicht verfügbar');
       element.setAttribute('aria-label', title);
-      element.innerHTML = `<div class="pb-card-head"><button class="pb-handle" aria-label="${escape(title)} verschieben" title="Ziehen oder mit den Pfeiltasten verschieben">⠿ &nbsp; ${card.type === 'note' ? 'NOTIZ' : 'FAHRZEUG'}</button><label class="pb-color" title="Kartenfarbe"><input type="color" value="${card.color}" aria-label="Kartenfarbe" /></label><button data-pb-delete title="Karte löschen" aria-label="Karte löschen">×</button></div><div class="pb-card-content"></div><button class="pb-port" aria-label="Faden verbinden" title="Faden zur anderen Karte ziehen oder zwei Verbindungspunkte anklicken">•</button>`;
+      element.innerHTML = `<div class="pb-card-head"><button class="pb-handle" aria-label="${escape(title)} verschieben" title="Ziehen oder mit den Pfeiltasten verschieben">⠿ &nbsp; ${card.type === 'note' ? 'NOTIZ' : 'FAHRZEUG'}</button><label class="pb-color" title="Kartenfarbe"><input type="color" value="${card.color}" aria-label="Kartenfarbe" /></label><button data-pb-delete title="Karte löschen" aria-label="Karte löschen">×</button></div><div class="pb-card-content"></div><button class="pb-port pb-port-left" data-side="left" aria-label="Faden links verbinden" title="Linker Verbindungspunkt">•</button><button class="pb-port" data-side="right" aria-label="Faden rechts verbinden" title="Faden zur anderen Karte ziehen oder zwei Verbindungspunkte anklicken">•</button>`;
       const content = element.querySelector('.pb-card-content');
       if (card.type === 'calculator') {
         element.querySelector('.pb-handle').textContent = '⠿  RECHNER';
@@ -112,6 +124,10 @@
           button.setAttribute('aria-label', key === 'C' ? 'Rechnung löschen' : key === '⌫' ? 'Letztes Zeichen löschen' : key === '=' ? 'Ergebnis berechnen' : key);
           content.querySelector('.pb-calc-keys').append(button);
         }
+       } else if (card.taskId) {
+        const task=api.getState().tasks.find(t=>t.id===card.taskId);
+        element.querySelector('.pb-handle').textContent='⠿  AUFGABE';
+        content.innerHTML=`<div class="pb-card-body pb-task ${task?.done?'task-done':''}"><h2>${escape(task?.title||'Aufgabe')}</h2><p>${task?.date?escape(api.formatDate(task.date)):'Ohne Frist'}</p><label><input type="checkbox" data-pb-task="${escape(card.taskId)}" ${task?.done?'checked':''} /> Erledigt</label><button data-pb-task-delete="${escape(card.taskId)}">Aufgabe löschen</button></div>`;
       } else if (card.type === 'note') {
         content.innerHTML = '<div class="pb-card-body"><input class="pb-note-title" placeholder="Deine Notiz" aria-label="Notiztitel" /><textarea class="pb-note-text" placeholder="Gedanken, Fragen, nächste Schritte …" aria-label="Notiztext"></textarea></div>';
         content.querySelector('input').value = card.title;
@@ -153,30 +169,30 @@
     const rect = viewport.getBoundingClientRect(), v = board.viewport;
     return { x: (clientX - rect.left - v.x) / v.scale, y: (clientY - rect.top - v.y) / v.scale };
   }
-  function anchor(id) {
+  function anchor(id,side='right') {
     const card = board.cards.find(c => c.id === id), el = cardElement(id);
-    return card && el ? { x: card.x + WIDTH, y: card.y + el.offsetHeight / 2 } : null;
+    return card && el ? { x: card.x + (side==='left'?0:WIDTH), side, y: card.y + el.offsetHeight / 2 } : null;
   }
-  function path(a, b) { const curve = Math.max(45, Math.abs(b.x - a.x) * .4); return `M ${a.x} ${a.y} C ${a.x + curve} ${a.y}, ${b.x + curve} ${b.y}, ${b.x} ${b.y}`; }
+  function path(a, b) { const curve = Math.max(45, Math.abs(b.x - a.x) * .4); return `M ${a.x} ${a.y} C ${a.x + (a.side==='left'?-curve:curve)} ${a.y}, ${b.x + (b.side==='left'?-curve:curve)} ${b.y}, ${b.x} ${b.y}`; }
   function drawEdges() {
     svg.replaceChildren();
     const ns = 'http://www.w3.org/2000/svg';
     for (const edge of board.edges) {
-      const a = anchor(edge.from), b = anchor(edge.to); if (!a || !b) continue;
+      const a = anchor(edge.from,edge.fromSide), b = anchor(edge.to,edge.toSide); if (!a || !b) continue;
       const group = document.createElementNS(ns, 'g'); group.classList.add('pb-edge'); group.dataset.edge = edge.id;
       group.setAttribute('tabindex', '0'); group.setAttribute('role', 'button'); group.setAttribute('aria-label', 'Faden löschen');
       for (const cls of ['pb-thread-hit', 'pb-thread']) { const line = document.createElementNS(ns, 'path'); line.setAttribute('d', path(a, b)); line.setAttribute('class', cls); group.append(line); }
       svg.append(group);
     }
     if (linkSource && linkPoint) {
-      const a = anchor(linkSource); if (!a) return;
+      const a = anchor(linkSource,linkSide); if (!a) return;
       const line = document.createElementNS(ns, 'path'); line.setAttribute('d', path(a, linkPoint)); line.setAttribute('class', 'pb-thread'); line.setAttribute('stroke-dasharray', '5 5'); svg.append(line);
     }
   }
   function cancelLink() { linkSource = null; linkPoint = null; refreshSelection(); drawEdges(); }
-  function connect(from, to) {
+  function connect(from, to, toSide='right') {
     if (from !== to && !board.edges.some(e => (e.from === from && e.to === to) || (e.from === to && e.to === from))) {
-      board.edges.push({ id: uid(), from, to }); save();
+      board.edges.push({ id: uid(), from, to, fromSide:linkSide, toSide }); save();
     }
     cancelLink();
   }
@@ -190,6 +206,7 @@
     if (type === 'note') cardElement(card.id).querySelector('.pb-note-title').focus();
   }
   function deleteCard(id) {
+    const taskId=board.cards.find(c=>c.id===id)?.taskId;if(taskId)api.changeTask(taskId,{pinned:false});
     undoState = structuredClone(board);
     board.cards = board.cards.filter(c => c.id !== id); board.edges = board.edges.filter(e => e.from !== id && e.to !== id);
     undoAfter = shared();
@@ -268,6 +285,7 @@
     picker.querySelector('input').oninput = renderPicker;
     picker.addEventListener('click', event => { if (event.target === picker) { const r = picker.getBoundingClientRect(); if (event.clientX < r.left || event.clientX > r.right || event.clientY < r.top || event.clientY > r.bottom) picker.close(); } });
     root.addEventListener('click', event => {
+      const taskDelete=event.target.closest('[data-pb-task-delete]');if(taskDelete){api.changeTask(taskDelete.dataset.pbTaskDelete,{deletedAt:new Date().toISOString(),pinned:false});render();return;}
       const el = event.target.closest('.pb-card');
       const key = event.target.closest('[data-pb-calc]');
       if (key && el) calculateCard(el, key.dataset.pbCalc);
@@ -275,8 +293,8 @@
       const edge = event.target.closest('[data-edge]'); if (edge) deleteEdge(edge.dataset.edge);
       // Pointer users are handled below; keyboard activation of a connection point lands here.
       if (event.detail === 0 && event.target.closest('.pb-port') && el) {
-        if (linkSource && linkSource !== el.dataset.card) connect(linkSource, el.dataset.card);
-        else { linkSource = el.dataset.card; refreshSelection(); setStatus('Verbindungspunkt einer zweiten Karte wählen. Escape bricht ab.'); }
+        if (linkSource && linkSource !== el.dataset.card) connect(linkSource, el.dataset.card,event.target.closest('.pb-port').dataset.side);
+        else { linkSource = el.dataset.card; linkSide=event.target.closest('.pb-port').dataset.side; refreshSelection(); setStatus('Verbindungspunkt einer zweiten Karte wählen. Escape bricht ab.'); }
       }
     });
     root.addEventListener('input', event => {
@@ -294,6 +312,7 @@
       if (!editing() && deferredShared) { deferredShared = null; receiveShared(sync.snapshot()); }
     }, 0));
     root.addEventListener('change', event => {
+      if(event.target.matches('[data-pb-task]')){api.changeTask(event.target.dataset.pbTask,{done:event.target.checked});render();return;}
       if (!event.target.matches('[data-pb-select]')) return;
       const card = board.cards.find(c => c.id === event.target.closest('.pb-card').dataset.card);
       if (event.target.checked && !board.selected.includes(card.vehicleId)) {
@@ -322,8 +341,8 @@
       const el = event.target.closest('.pb-card'), card = el && board.cards.find(c => c.id === el.dataset.card);
       if (event.target.closest('.pb-port')) {
         event.preventDefault();
-        if (linkSource && linkSource !== card.id) { connect(linkSource, card.id); return; }
-        linkSource = card.id; linkPoint = point(event.clientX, event.clientY); refreshSelection();
+        if (linkSource && linkSource !== card.id) { connect(linkSource, card.id,event.target.closest('.pb-port').dataset.side); return; }
+        linkSource = card.id; linkSide=event.target.closest('.pb-port').dataset.side; linkPoint = point(event.clientX, event.clientY); refreshSelection();
         gesture = { type: 'link', pointer: event.pointerId, x: event.clientX, y: event.clientY, moved: false };
       } else if (event.target.closest('.pb-handle')) {
         event.preventDefault(); cancelLink();
@@ -356,7 +375,7 @@
       if (current.type === 'link') {
         const target = document.elementFromPoint(event.clientX, event.clientY)?.closest('.pb-card');
         if (event.type === 'pointercancel') cancelLink();
-        else if (target && target.dataset.card !== linkSource) connect(linkSource, target.dataset.card);
+        else if (target && target.dataset.card !== linkSource) connect(linkSource, target.dataset.card, document.elementFromPoint(event.clientX,event.clientY)?.closest('.pb-port')?.dataset.side || (event.clientX<target.getBoundingClientRect().left+target.getBoundingClientRect().width/2?'left':'right'));
         else if (current.moved) cancelLink();
         else setStatus('Jetzt den Verbindungspunkt der zweiten Karte anklicken.');
       } else save();
@@ -380,7 +399,7 @@
       else { if (storageKey) save(); cancelLink(); picker.close(); }
     });
     document.addEventListener('carsautohaus:operations-updated', () => {
-      if (active && !gesture && !root.contains(document.activeElement)) render();
+      if (active && !editing()) render();
     });
   }
 
@@ -388,7 +407,7 @@
     api = window.CarsAutoHaus;
     if (!api || document.getElementById('pinboard-view')) return;
     root = document.createElement('section'); root.id = 'pinboard-view'; root.className = 'view'; root.setAttribute('aria-label', 'Pinwand');
-    root.innerHTML = `<header class="pb-top"><div class="pb-brand"><button id="pb-back" class="pb-icon" title="Zurück zur Website" aria-label="Zurück zur Website">←</button><div><h1>Pinwand</h1><small>Raum für deine Auswahl.</small></div></div><div class="pb-actions"><button id="pb-add-car">+ Auto</button><button id="pb-add-note">+ Notiz</button><button id="pb-compare" class="pb-primary" disabled>Vergleichen (0/2)</button><button id="pb-help-toggle" aria-label="Bedienung erklären" aria-expanded="false" aria-controls="pb-help">?</button></div></header><div class="pb-viewport" id="pb-viewport"><div class="pb-world"><svg class="pb-edges" aria-label="Verbindungen"></svg></div><div id="pb-empty" class="pb-empty"><svg viewBox="0 0 40 40" fill="none" aria-hidden="true"><rect x="5" y="9" width="23" height="26" rx="4" stroke="currentColor"/><rect x="13" y="4" width="22" height="26" rx="4" fill="#f7f8f4" stroke="currentColor"/><path d="M19 13h10M19 18h7" stroke="currentColor" stroke-linecap="round"/></svg><h2>Alles beginnt mit einer Karte.</h2><p>Pinne ein Auto an oder halte einen Gedanken fest.</p></div></div><aside id="pb-help" class="pb-help" hidden><p><b>Dein Platz für Ideen.</b></p><p>Füge Autos aus deinem Bestand und eigene Notizen hinzu. Ziehe Karten an ihrer oberen Leiste an einen freien Platz.</p><p>Ziehe den Punkt rechts an einer Karte zu einer anderen Karte, um einen Faden zu spannen. Alternativ beide Punkte anklicken. Faden anklicken = entfernen.</p><p>Wähle zwei Autos über „Im Vergleich“ und öffne „Vergleichen“.</p><p>Am Farbpunkt wählst du jede beliebige Kartenfarbe. × entfernt nur die Karte, nie das Fahrzeug.</p><p>Leere Fläche ziehen = verschieben. + / − = zoomen. „Alle“ zeigt deine Karten. Tastatur: Kartenleiste fokussieren und Pfeiltasten verwenden.</p><p>Automatisch auf diesem Gerät gespeichert. Mit Export und Import kannst du deine Pinwand sichern oder übertragen. Fahrzeugfotos und Fahrzeugdaten stammen weiterhin aus deinem Bestand.</p></aside><footer class="pb-bottom"><span id="pb-status" class="pb-status" role="status" aria-live="polite">Auf diesem Gerät gespeichert</span><div class="pb-controls"><button id="pb-undo" hidden>Rückgängig</button><button id="pb-export" title="Pinwand als Datei sichern">Export</button><button id="pb-import" title="Pinwand-Sicherung laden">Import</button><button id="pb-zoom-out" aria-label="Verkleinern">−</button><span class="pb-zoom" id="pb-zoom">100%</span><button id="pb-zoom-in" aria-label="Vergrößern">+</button><button id="pb-fit" title="Alle Karten anzeigen">Alle</button></div><input type="file" id="pb-file" accept="application/json,.json" hidden /></footer>`;
+    root.innerHTML = `<header class="pb-top"><div class="pb-brand"><button id="pb-back" class="pb-icon" title="Zurück zur Website" aria-label="Zurück zur Website">←</button><div><h1>Pinwand</h1><small>Raum für deine Auswahl.</small></div></div><div class="pb-actions"><label class="pb-background-label" title="Gemeinsame Hintergrundfarbe"><input type="color" id="pb-background" value="#10151d" aria-label="Hintergrundfarbe der Pinwand" /> Hintergrund</label><button id="pb-add-car">+ Auto</button><button id="pb-add-note">+ Notiz</button><button id="pb-compare" class="pb-primary" disabled>Vergleichen (0/2)</button><button id="pb-help-toggle" aria-label="Bedienung erklären" aria-expanded="false" aria-controls="pb-help">?</button></div></header><div class="pb-viewport" id="pb-viewport"><div class="pb-world"><svg class="pb-edges" aria-label="Verbindungen"></svg></div><div id="pb-empty" class="pb-empty"><svg viewBox="0 0 40 40" fill="none" aria-hidden="true"><rect x="5" y="9" width="23" height="26" rx="4" stroke="currentColor"/><rect x="13" y="4" width="22" height="26" rx="4" fill="#f7f8f4" stroke="currentColor"/><path d="M19 13h10M19 18h7" stroke="currentColor" stroke-linecap="round"/></svg><h2>Alles beginnt mit einer Karte.</h2><p>Pinne ein Auto an oder halte einen Gedanken fest.</p></div></div><aside id="pb-help" class="pb-help" hidden><p><b>Dein Platz für Ideen.</b></p><p>Füge Autos aus deinem Bestand und eigene Notizen hinzu. Ziehe Karten an ihrer oberen Leiste an einen freien Platz.</p><p>Ziehe den Punkt links oder rechts an einer Karte zu einer anderen Karte, um einen Faden zu spannen. Alternativ beide Punkte anklicken. Faden anklicken = entfernen.</p><p>Wähle zwei Autos über „Im Vergleich“ und öffne „Vergleichen“.</p><p>Am Farbpunkt wählst du jede beliebige Kartenfarbe. × entfernt nur die Karte, nie das Fahrzeug.</p><p>Leere Fläche ziehen = verschieben. + / − = zoomen. „Alle“ zeigt deine Karten. Tastatur: Kartenleiste fokussieren und Pfeiltasten verwenden.</p><p>Automatisch auf diesem Gerät gespeichert. Mit Export und Import kannst du deine Pinwand sichern oder übertragen. Fahrzeugfotos und Fahrzeugdaten stammen weiterhin aus deinem Bestand.</p></aside><footer class="pb-bottom"><span id="pb-status" class="pb-status" role="status" aria-live="polite">Auf diesem Gerät gespeichert</span><div class="pb-controls"><button id="pb-undo" hidden>Rückgängig</button><button id="pb-export" title="Pinwand als Datei sichern">Export</button><button id="pb-import" title="Pinwand-Sicherung laden">Import</button><button id="pb-zoom-out" aria-label="Verkleinern">−</button><span class="pb-zoom" id="pb-zoom">100%</span><button id="pb-zoom-in" aria-label="Vergrößern">+</button><button id="pb-fit" title="Alle Karten anzeigen">Alle</button></div><input type="file" id="pb-file" accept="application/json,.json" hidden /></footer>`;
     root.querySelector('#pb-help-toggle').insertAdjacentHTML('beforebegin', '<button id="pb-add-calculator">+ Rechner</button>');
     root.querySelector('#pb-status').textContent = syncLabel;
     root.querySelector('#pb-help p:last-child').textContent = 'Karten, Notizen, Rechnungen, Farben und Fäden werden für alle Benutzer dieses gemeinsamen Bestands synchronisiert. Zoom und Vergleichsauswahl bleiben persönlich. Export sichert die Pinwand; Import ersetzt sie für alle.';
@@ -402,6 +421,7 @@
     button.innerHTML = '<span class="nav-icon">▧</span>Pinwand'; nav?.append(button);
     const home = document.querySelector('#home-view .hero');
     if (home) { const shortcut = document.createElement('button'); shortcut.className = 'secondary'; shortcut.dataset.go = 'pinboard'; shortcut.textContent = 'Pinwand öffnen ↗'; home.append(shortcut); }
+    $('#pb-background').addEventListener('input',event=>{board.background=event.target.value;viewport.style.backgroundColor=board.background;viewport.style.setProperty('--pb-board-ink',ink(board.background));scheduleSave();});
     bind();
   }
   if (window.CarsAutoHaus) start(); else document.addEventListener('carsautohaus:ready', start, { once: true });

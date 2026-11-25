@@ -1,0 +1,20 @@
+/* Graphite, brushed silver and restrained blue. Status colours remain meaningful. */
+:root{color-scheme:dark;--black:#080b10;--deep-navy:#101318;--navy:#181d24;--dark-blue:#222b36;--royal-blue:#2878dc;--turquoise:#70abed;--light-gray:#e0e5eb;--white-accent:#f6f8fa;--bg:#101318;--panel:#181d24;--panel-2:#222932;--line:#303842;--text:#e0e5eb;--muted:#9ba6b3;--blue:#2878dc;--blue-soft:#203853;--green:#81b8a1;--yellow:#d2b984;--red:#df8990;--shadow:0 18px 52px #0005;--shadow-sm:0 10px 28px #0003}
+html,body{background:var(--bg);color:var(--text)}
+body{background-image:none}h1,h2,h3{color:var(--text)}
+.auth-screen{background:#101318}.auth-card,.card{background:var(--panel);border-color:var(--line)}
+.brand-mark,.primary,.mobile-fab,.mobile-form-save{background:var(--blue);color:white}
+.topbar,.bottom-nav{background:#14191ff5;border-color:var(--line)}
+.nav-button.active{background:#203853;color:#a5ceff}.nav-button{color:var(--muted)}
+input,select,textarea{background:#11171e;color:var(--text);border-color:#36414e}
+input:focus,select:focus,textarea:focus{border-color:var(--blue);box-shadow:0 0 0 3px #2878dc22}
+.secondary,.icon-button{background:#202833;color:var(--text);border-color:var(--line)}
+.profit-positive,.up{color:var(--green)}.profit-negative{color:var(--red)}
+.sync-dot.online{background:var(--green)}.sync-dot.error{background:var(--red)}
+.quick{background:var(--panel);border-color:var(--line)}.quick:hover{background:#202833;border-color:#47739f}
+.vehicle-cover{background:#242d38}.vehicle-name,.vehicle-price{color:var(--text)}
+.favourite{background:#111820e8;color:#b5d5ff}.vehicle-row:hover{background:#27364955}
+.notice{background:#1c2c40;border-color:#447eb9;color:#eff6ff}
+.muted,.subtitle,.vehicle-meta,.quick small{color:var(--muted)}
+input[type=checkbox],input[type=radio]{accent-color:var(--blue)}a{color:#8cbfff}
+::selection{color:white;background:#2878dc}*{scrollbar-color:#4c6179 #151a21}

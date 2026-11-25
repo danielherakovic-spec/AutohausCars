@@ -5,7 +5,7 @@
   const categories = ['Probefahrt', 'Werkstatt', 'Abholung', 'Verkauf', 'Besichtigung', 'Sonstiges'];
   const colors = ['#7cbece', '#dba972', '#a69bda', '#77b99c', '#dd9393', '#8aa8bf'];
   const labelDate = (day, options = {}) => new Intl.DateTimeFormat('de-DE', { timeZone: 'UTC', day: 'numeric', month: 'long', ...options }).format(C.wall(day));
-  const vehicleName = v => [v.brand, v.model, v.year].filter(Boolean).join(' ');
+  const vehicleName = v => api.vehicleName(v);
   let api, root, dialog, vehicleDialog, store, workspace, anchor = C.today(), view = 'month', query = '', category = '', selected = C.today(), draft, occurrence, vehicleMode, chosenVehicles = [], reminderTimer;
   const reminded = new Set();
   const $ = selector => root.querySelector(selector);

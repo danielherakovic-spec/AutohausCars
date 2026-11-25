@@ -9,7 +9,7 @@
   const esc = value => String(value ?? '').replace(/[&<>'"]/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[char]));
   const money = value => new Intl.NumberFormat('de-DE', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 }).format(number(value));
   const integer = value => number(value).toLocaleString('de-DE', { maximumFractionDigits: 0 });
-  const vehicleName = vehicle => [vehicle?.brand, vehicle?.model, vehicle?.series].filter(Boolean).join(' ') || 'Unbekanntes Fahrzeug';
+  const vehicleName = vehicle => window.CarsAutoHaus.vehicleName(vehicle);
   const round50 = value => Math.max(0, Math.round(number(value) / 50) * 50);
   const median = values => {
     const sorted = values.map(number).filter(value => value > 0).sort((a, b) => a - b);

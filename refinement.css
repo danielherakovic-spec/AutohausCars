@@ -1,0 +1,44 @@
+/* v20: focused workspaces, accessible controls and mobile layout. */
+[hidden]{display:none!important}
+.hero h1{letter-spacing:-.045em}.card,.quick{box-shadow:0 8px 26px #0002}
+.quick .emoji{display:inline-flex;align-items:center;justify-content:center;width:36px;height:36px;font-size:23px;filter:grayscale(1);color:#93bff1}
+.vehicle-title b,.vehicle-name{overflow-wrap:anywhere}.vehicle-title{gap:10px}
+.vehicle-cover .archive-action{position:absolute;right:54px;top:12px;z-index:2;width:34px;height:34px;border-radius:10px;border:1px solid #ffffff26;background:#101720ed;color:#c5d7eb;font-size:19px;cursor:pointer}
+.vehicle-cover .archive-action:hover{background:#245f9d;color:white}.vehicle-cover{position:relative}
+.task-row{align-items:center;gap:12px;flex-wrap:wrap}.task-copy{flex:1;min-width:140px}.task-copy b{font-size:14px;font-weight:500;overflow-wrap:anywhere;white-space:pre-wrap}.task-copy time{display:block;margin-top:5px;color:var(--muted);font-size:12px}
+.task-actions{display:flex;align-items:center;gap:8px}.task-actions label{display:flex;align-items:center;gap:6px;font-size:12px;margin:0}.task-actions input{width:17px;min-height:17px;height:17px}.task-actions button{width:34px;height:34px;border:1px solid #465366;background:#202b39;color:#c6dcf8;border-radius:8px}.task-actions button[aria-pressed=true]{background:#235185;color:white}
+.task-done .task-copy b,.task-done h3,.pb-task.task-done h2{text-decoration:line-through;opacity:.65}
+.task-pin-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px;margin-top:16px}
+.task-note{padding:22px;background:#202d3d;border:1px solid #3a516e;border-radius:16px;border-top:3px solid #78a7dc;max-width:480px}.task-note h3{font-size:17px;line-height:1.5;white-space:pre-wrap;overflow-wrap:anywhere}.task-note p{font-size:12px;color:#a3b8cf}.task-note-label{font-size:10px;letter-spacing:.14em;color:#a9c9ed}.task-board-link{border:0;background:none;color:#aacdf7;padding:16px 0 0;font-size:12px}
+#profile-view .form-card{max-width:820px}
+#garage-view{--gg-accent:#83b7f6;--gg-bg:#10151c}
+#garage-view .gg-work-status{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 18px;margin-bottom:18px;background:#171f2a;border:1px solid #2d3d50;border-radius:12px;font-size:12px;color:#9eb0c4}
+#garage-view .gg-work-status>div{display:flex;gap:8px;align-items:center}.gg-work-status input{max-width:150px!important;min-height:36px!important}
+#garage-presence.is-working{color:#a5cfff}#garage-view #garage-work-toggle[aria-pressed=true]{border-color:#6aa6ec;color:#c8e3ff;background:#223e61}
+#garage-view .gg-layer{position:absolute;left:20px;top:82px;z-index:3;display:flex;align-items:center;gap:9px;max-width:calc(100% - 40px);font-size:11px;color:#9fb3ca}#garage-view .gg-layer select{min-height:32px;max-width:190px;padding:5px 8px;background:#172332ed;font-size:11px}
+#garage-view .gg-stage-label{max-width:65%}.gg-model-name{overflow-wrap:anywhere}#garage-view .gg-model-disclaimer{font-size:10px}#garage-view .gg-primary{background:#246cc5;color:white;border-color:#448ce5}
+#garage-view .gg-part-button[aria-pressed=true]{background:#203c5c;border-color:#508acd}#garage-view .gg-part-list{max-height:540px;overflow:auto;padding:4px}
+#garage-view .gg-parts-head>div{max-width:740px}.gg-cost-note{line-height:1.65}
+#garage-view .gg-primary,#calendar-view .cal-primary,.cars-calendar-dialog .cal-primary{background:#286bbd!important;border-color:#4c91e3!important;color:#fff!important}
+#garage-view .gg-primary:hover,#calendar-view .cal-primary:hover,.cars-calendar-dialog .cal-primary:hover{background:#347dd5!important}
+#garage-view input:focus,#garage-view textarea:focus,#garage-view select:focus{border-color:#83b7f6!important}
+#garage-view .gg-render-tools button[aria-pressed=true]{background:#203e60!important;color:#b6d7ff!important;border-color:#5387c3!important}
+#garage-view .gg-part-total strong{color:#b0d1fa}#calendar-view{--cal-accent:#94bdf0}
+#pinboard-view{color-scheme:dark;--pb-line:#344356;--pb-accent:#367ecc;--pb-ink:#e1e9f3;background:#10151d;color:#e1e9f3}
+#pinboard-view .pb-top,#pinboard-view .pb-bottom{background:#161e2bf5;border-color:#344356;color:#c3d2e4}
+#pinboard-view .pb-brand small,#pinboard-view .pb-status,#pinboard-view .pb-zoom{color:#a5b7ce}
+#pinboard-view .pb-top button,#pinboard-view .pb-bottom button{background:#253449;color:#dae8fa;border-color:#3b4e67}
+#pinboard-view .pb-top button:hover,#pinboard-view .pb-bottom button:hover{background:#324a68}
+#pinboard-view .pb-top .pb-primary{background:#2468bc;border-color:#478de3;color:white}
+#pinboard-view .pb-help{background:#1a2535;border-color:#3b4e67;color:#ccd9e9}
+#pinboard-view .pb-viewport{background-image:radial-gradient(color-mix(in srgb,var(--pb-board-ink,#fff) 15%,transparent) .8px,transparent .8px)!important}
+#pinboard-view .pb-empty,#pinboard-view .pb-empty h2,#pinboard-view .pb-empty p{color:var(--pb-board-ink,#fff);opacity:.65}
+#pinboard-view .pb-thread{stroke:color-mix(in srgb,var(--pb-board-ink,#fff) 60%,#4f8bce);stroke-width:2}
+#pinboard-view .pb-port-left{left:-13px;right:auto}#pinboard-view .pb-port{color:#366aab!important;border-color:#8ba9d0!important;background:#e8f1fc!important}
+#pinboard-view .pb-card{box-shadow:0 12px 32px #0004;color-scheme:light}#pinboard-view .pb-card.pb-selected{outline-color:#5b9cef}#pinboard-view .pb-card.pb-link-source{outline-color:#5b9cef}
+#pinboard-view .pb-background-label{display:flex;align-items:center;gap:7px;font-size:11px;margin:0 9px 0 0;white-space:nowrap}
+#pinboard-view .pb-task h2{white-space:pre-wrap}#pinboard-view .pb-task label{display:flex;align-items:center;gap:8px;margin:15px 0 10px;font-size:12px}#pinboard-view .pb-task input{width:16px;height:16px;min-height:16px;margin:0}#pinboard-view .pb-task p{font-size:12px;color:inherit;opacity:.7}#pinboard-view .pb-task button{font-size:11px}
+:focus-visible{outline:2px solid #86baff;outline-offset:3px}
+@media(max-width:800px){#garage-view .gg-work-status{align-items:flex-start;flex-direction:column}#garage-view .gg-model-disclaimer{display:none}#garage-view .gg-stage-label{max-width:calc(100% - 30px)}#garage-view .gg-layer{left:14px;top:100px}#garage-view .gg-layer label{display:none}}
+@media(max-width:620px){.quick-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.quick{min-width:0}.quick small{font-size:11px}.task-actions{flex-wrap:wrap}.vehicle-cover .archive-action{right:8px;top:54px}.task-note{max-width:none}.task-pin-grid{grid-template-columns:1fr}#pinboard-view .pb-top{display:block;padding:12px}.pb-actions{margin-top:10px;flex-wrap:wrap!important}#pinboard-view .pb-brand{justify-content:flex-start}#pinboard-view .pb-background-label{font-size:10px;margin-right:0}#pinboard-view .pb-viewport{top:160px}#pinboard-view .pb-top button{padding:6px 8px;font-size:11px}#pinboard-view .pb-bottom{padding:9px;flex-wrap:wrap}#pinboard-view .pb-controls{flex-wrap:wrap}#pinboard-view .pb-help{top:170px}#garage-view .gg-stage{min-height:480px}}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;animation-duration:.01ms!important;transition-duration:.01ms!important}}
