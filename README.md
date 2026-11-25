@@ -1,11 +1,5 @@
-# CarsAutoHaus v21
+# CarsAutoHaus v22
 
-Die bisherigen Navy-, Blau- und Türkisfarben sind wiederhergestellt. Der Schnellzugriff ist in Fahrzeuge, Arbeitsbereiche und Auswertung & Sicherung geordnet. Die Garage zeigt alle 206 Teile inklusive Innenraum gleichzeitig transparent. Die Auswahl hebt ein Teil hervor, ohne andere auszublenden. Arbeitsstatus und dessen laufende Übertragung sind entfernt.
+Neu in der Garage: Boden einschließlich Plattform, Ringen und Raster an/aus; vier Ansichtsstufen vom Außenkleid bis zur Technik; Innenraum, Fahrwerk oder einzelne Baugruppen gezielt anzeigen; „Alle Teile gleichzeitig“ zeigt das gesamte Modell. Notizen und Kosten bleiben erhalten.
 
-## Einspielen
-
-ZIP entpacken und den Inhalt direkt in den bestehenden GitHub-Repositoryordner kopieren. Gleichnamige Dateien ersetzen, Summary ausfüllen, committen und Push origin wählen. Danach Strg + F5. Eigene Änderungen an config.js beibehalten.
-
-Wenn v20 bereits eingerichtet ist, ist kein weiteres Supabase-Update nötig. Sonst die enthaltene supabase/v20-update.sql einmal im bestehenden Projekt ausführen.
-
-Das detaillierte Modell bleibt illustrativ und enthält Varianten; es ist kein fahrzeugspezifischer Original-Ersatzteilkatalog. Noch nicht live veröffentlicht.
+ZIP entpacken, Inhalt im GitHub-Repositoryordner ersetzen, committen und Push origin wählen. Danach Strg + F5. Eigene config.js beibehalten. Bei bereits eingerichtetem v20/v21 ist kein Supabase-Update erforderlich. Noch nicht live veröffentlicht.

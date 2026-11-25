@@ -1,3 +1,4 @@
+import { partVisible } from './garage-visibility.js';
 import { EXTRA_PARTS } from './garage-parts.js';
 import { PARTS } from './garage-core.js';
 import * as THREE from './vendor/three.module.js';
@@ -15,10 +16,11 @@ export function createGarageScene(host,{onHover,onSelect,onError}={}) {
   scene.add(new THREE.HemisphereLight('#d7e9f4','#1b292e',2.2));
   const key=new THREE.DirectionalLight('#e1f6ff',3); key.position.set(3,7,4); scene.add(key);
   const rim=new THREE.DirectionalLight('#91b8eb',2); rim.position.set(-5,3,-4); scene.add(rim);
-  const floor=new THREE.Mesh(new THREE.CircleGeometry(16,96),new THREE.MeshStandardMaterial({color:'#101c25',roughness:.75,metalness:.25})); floor.rotation.x=-Math.PI/2; floor.position.y=-.035;scene.add(floor);
-  const platform=new THREE.Mesh(new THREE.CylinderGeometry(3.8,3.85,.055,96),new THREE.MeshStandardMaterial({color:'#1b2830',roughness:.72,metalness:.3})); platform.position.y=-.035;scene.add(platform);
-  for(const radius of [3.65,3.8]){const ring=new THREE.Mesh(new THREE.TorusGeometry(radius,.006,6,160),new THREE.MeshBasicMaterial({color:radius===3.8?'#69949d':'#334d57',transparent:true,opacity:.65}));ring.rotation.x=-Math.PI/2;ring.position.y=.003;scene.add(ring);}
-  const grid=new THREE.GridHelper(24,24,'#263c48','#172933');grid.position.y=-.027;grid.material.transparent=true;grid.material.opacity=.35;scene.add(grid);
+  const ground=new THREE.Group();scene.add(ground);
+  const floor=new THREE.Mesh(new THREE.CircleGeometry(16,96),new THREE.MeshStandardMaterial({color:'#101c25',roughness:.75,metalness:.25})); floor.rotation.x=-Math.PI/2; floor.position.y=-.035;ground.add(floor);
+  const platform=new THREE.Mesh(new THREE.CylinderGeometry(3.8,3.85,.055,96),new THREE.MeshStandardMaterial({color:'#1b2830',roughness:.72,metalness:.3})); platform.position.y=-.035;ground.add(platform);
+  for(const radius of [3.65,3.8]){const ring=new THREE.Mesh(new THREE.TorusGeometry(radius,.006,6,160),new THREE.MeshBasicMaterial({color:radius===3.8?'#69949d':'#334d57',transparent:true,opacity:.65}));ring.rotation.x=-Math.PI/2;ring.position.y=.003;ground.add(ring);}
+  const grid=new THREE.GridHelper(24,24,'#263c48','#172933');grid.position.y=-.027;grid.material.transparent=true;grid.material.opacity=.35;ground.add(grid);
   const model=new THREE.Group();scene.add(model);let meshes=[],groups=new Map(),hovered='',selected='',active=false,frame=0,xray=true,rotate=false,visibleGroup='all';
   const raycaster=new THREE.Raycaster(),pointer=new THREE.Vector2();let pointerStart;
   function surface(points,rows,cols,id,glass=false) {
@@ -98,7 +100,7 @@ export function createGarageScene(host,{onHover,onSelect,onError}={}) {
     }
     setGroup(visibleGroup);setHighlight();draw();
   }
-  function setGroup(value){visibleGroup=value;for(const [id,group]of groups){const category=PARTS.find(p=>p.id===id)?.group;group.visible=value==='all'||(value==='internal'?!['Karosserie','Verglasung','Anbauteile','Rohbau'].includes(category):category===value);}draw();}
+  function setGroup(value){visibleGroup=value;for(const [id,group]of groups)group.visible=partVisible(PARTS.find(p=>p.id===id),value);hovered='';onHover?.('');setHighlight();draw();}
   function setHighlight(){for(const [id,group]of groups){const hot=id===hovered||id===selected;group.traverse(o=>{if(!o.material)return;if(o.userData.outline){o.material.color.set(hot?'#65afff':'#afc8d2');o.material.opacity=hot?1:(['Karosserie','Verglasung'].includes(PARTS.find(p=>p.id===id)?.group)?.55:.28);}else if(o.isMesh){o.material.color.set(hot?'#2b84ed':o.userData.glass?'#8daebf':'#a8bcc8');o.material.opacity=hot?.62:(o.userData.baseOpacity??(o.userData.glass?.09:xray?.16:.72));if(o.material.emissive)o.material.emissive.set(hot?'#073d7b':'#000000');}});}}
   function hit(event){const rect=renderer.domElement.getBoundingClientRect();pointer.set((event.clientX-rect.left)/rect.width*2-1,-(event.clientY-rect.top)/rect.height*2+1);raycaster.setFromCamera(pointer,camera);const hits=raycaster.intersectObjects(meshes.filter(mesh=>groups.get(mesh.userData.partId)?.visible),false);return hits.find(item=>item.object.visible)?.object.userData.partId||'';}
   renderer.domElement.addEventListener('pointermove',event=>{if(pointerStart&&Math.hypot(event.clientX-pointerStart.x,event.clientY-pointerStart.y)>5)return;const next=hit(event);if(next!==hovered){hovered=next;setHighlight();}onHover?.(next,event);renderer.domElement.style.cursor=next?'pointer':'grab';});
@@ -111,5 +113,5 @@ export function createGarageScene(host,{onHover,onSelect,onError}={}) {
   function draw(){renderer.render(scene,camera);}
   function animate(){if(!active)return;frame=requestAnimationFrame(animate);controls.autoRotate=rotate;controls.autoRotateSpeed=.65;controls.update();draw();}
   function preset(view='perspective'){const positions={perspective:[5.6,3.3,5.6],front:[8,1.7,0],rear:[-8,1.7,0],side:[0,1.8,8],top:[0,9,.01]};camera.position.set(...(positions[view]||positions.perspective));controls.target.set(0,.9,0);controls.update();draw();}
-  return {build,resize,setGroup,select(id){selected=id;setHighlight();draw();},setActive(value){active=value;cancelAnimationFrame(frame);if(active){resize();animate();}},preset,setXray(value){xray=value;setHighlight();draw();},setRotate(value){rotate=value;},zoom(factor){const delta=camera.position.clone().sub(controls.target).multiplyScalar(factor);if(delta.length()>=controls.minDistance&&delta.length()<=controls.maxDistance)camera.position.copy(controls.target).add(delta);controls.update();draw();},dispose(){active=false;cancelAnimationFrame(frame);observer.disconnect();controls.dispose();clearModel();renderer.dispose();renderer.domElement.remove();}};
+  return {build,resize,setGroup,setFloor(value){ground.visible=!!value;draw();},select(id){selected=id;setHighlight();draw();},setActive(value){active=value;cancelAnimationFrame(frame);if(active){resize();animate();}},preset,setXray(value){xray=value;setHighlight();draw();},setRotate(value){rotate=value;},zoom(factor){const delta=camera.position.clone().sub(controls.target).multiplyScalar(factor);if(delta.length()>=controls.minDistance&&delta.length()<=controls.maxDistance)camera.position.copy(controls.target).add(delta);controls.update();draw();},dispose(){active=false;cancelAnimationFrame(frame);observer.disconnect();controls.dispose();clearModel();renderer.dispose();renderer.domElement.remove();}};
 }
